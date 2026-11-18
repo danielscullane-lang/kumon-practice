@@ -94,12 +94,7 @@
     animation: badgePop 0.5s ease;
   }
   .badge .badge-label {
-    position: absolute;
-    bottom: -18px;
-    font-size: 0.6rem;
-    color: var(--muted);
-    white-space: nowrap;
-    font-weight: 600;
+    display: none;
   }
   @keyframes badgePop {
     0% { transform: scale(1); }
@@ -416,11 +411,11 @@
     <div id="main" style="display:none">
       <!-- Badge shelf -->
       <div class="badge-shelf" id="badge-shelf">
-        <div class="badge" id="badge-0" data-emoji="&#11088;"><span class="badge-label">Star</span></div>
-        <div class="badge" id="badge-1" data-emoji="&#129412;"><span class="badge-label">Unicorn</span></div>
-        <div class="badge" id="badge-2" data-emoji="&#127822;"><span class="badge-label">Apple</span></div>
-        <div class="badge" id="badge-3" data-emoji="&#129365;"><span class="badge-label">Carrot</span></div>
-        <div class="badge" id="badge-4" data-emoji="&#128048;"><span class="badge-label">Bunny</span></div>
+        <div class="badge" id="badge-0">?</div>
+        <div class="badge" id="badge-1">?</div>
+        <div class="badge" id="badge-2">?</div>
+        <div class="badge" id="badge-3">?</div>
+        <div class="badge" id="badge-4">?</div>
       </div>
 
       <!-- Streak -->
@@ -661,16 +656,8 @@ function resetBadges() {
   for (let i = 0; i < 5; i++) {
     const el = document.getElementById('badge-' + i);
     el.className = 'badge';
-    el.textContent = '';
-    el.appendChild(makeBadgeLabel(BADGES[i].name));
+    el.textContent = '?';
   }
-}
-
-function makeBadgeLabel(name) {
-  const span = document.createElement('span');
-  span.className = 'badge-label';
-  span.textContent = name;
-  return span;
 }
 
 function awardBadge() {
@@ -680,7 +667,6 @@ function awardBadge() {
   const el = document.getElementById('badge-' + idx);
   el.className = 'badge earned';
   el.textContent = BADGES[idx].emoji;
-  el.appendChild(makeBadgeLabel(BADGES[idx].name));
   showBadgePopup(BADGES[idx]);
 }
 
@@ -753,7 +739,9 @@ function showQuestion() {
   document.getElementById('tag-stretch').style.display =
     (q.notes && q.notes.indexOf('★') !== -1) ? 'inline-block' : 'none';
 
-  document.getElementById('question-text').textContent = q.question;
+  var qText = q.question;
+  if (needsUnits(q.answer)) qText += ' (State the units.)';
+  document.getElementById('question-text').textContent = qText;
 
   var inp = document.getElementById('answer-input');
   inp.value = '';
@@ -770,17 +758,46 @@ function showQuestion() {
 }
 
 function normalise(s) {
-  return s.toString().trim().toLowerCase().replace(/\s+/g, ' ').replace(/[‘’]/g, "'");
+  return s.toString().trim().toLowerCase()
+    .replace(/\s+/g, ‘ ‘)
+    .replace(/[‘’]/g, "’")
+    .replace(/°/g, ‘ degrees ‘)
+    .replace(/\bdeg\b/g, ‘ degrees ‘)
+    .replace(/£/g, ‘ pounds ‘)
+    .replace(/%/g, ‘ percent ‘)
+    .replace(/\s+/g, ‘ ‘)
+    .trim();
+}
+
+function normaliseAnswer(userAns, correctAns) {
+  if (normalise(userAns) === normalise(correctAns)) return true;
+  var u = normalise(userAns);
+  var c = normalise(correctAns);
+  var uNum = u.replace(/[^0-9.\-\/]/g, ‘’);
+  var cNum = c.replace(/[^0-9.\-\/]/g, ‘’);
+  if (uNum && uNum === cNum) {
+    var uLetters = u.replace(/[0-9.\-\/\s]/g, ‘’);
+    var cLetters = c.replace(/[0-9.\-\/\s]/g, ‘’);
+    if (uLetters === cLetters) return true;
+    if (cLetters === ‘c’ && (uLetters === ‘c’ || uLetters === ‘degrees c’ || uLetters === ‘degreesc’)) return true;
+    if (cLetters === ‘f’ && (uLetters === ‘f’ || uLetters === ‘degrees f’ || uLetters === ‘degreesf’)) return true;
+  }
+  return false;
+}
+
+function needsUnits(answer) {
+  var a = answer.toLowerCase();
+  return /°|degrees|cm|mm|m\b|km|kg|g\b|ml|litres|liters|£|%|percent|mph|hours|minutes|seconds/.test(a);
 }
 
 function checkAnswer() {
   if (answered) { nextQuestion(); return; }
   var q = sessionQueue[sessionIndex];
-  var userAns = document.getElementById('answer-input').value.trim();
+  var userAns = document.getElementById(‘answer-input’).value.trim();
   if (!userAns) return;
 
   var correctAns = q.answer;
-  var isCorrect = normalise(userAns) === normalise(correctAns);
+  var isCorrect = normaliseAnswer(userAns, correctAns);
 
   answered = true;
   var inp = document.getElementById('answer-input');

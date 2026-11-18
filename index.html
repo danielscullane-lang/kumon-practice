@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kumon Maths Practice</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --tag-bg: #eff6ff;
+    --tag-text: #1d4ed8;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+  header {
+    text-align: center;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  header p { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--card);
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  .filters select, .filters button {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+    flex: 1;
+    min-width: 120px;
+  }
+  .filters button {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    font-weight: 600;
+  }
+  .filters button:hover { background: var(--primary-dark); }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: var(--shadow);
+    flex: 1;
+    min-width: 90px;
+    text-align: center;
+  }
+  .stat-num { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--border);
+    border-radius: 100px;
+    height: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+
+  /* Question card */
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .tag {
+    font-size: 0.75rem;
+    padding: 3px 9px;
+    border-radius: 100px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-weight: 500;
+  }
+  .tag.stretch { background: #fef3c7; color: #92400e; }
+  .question-num {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .answer-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  .answer-input:focus { border-color: var(--primary); }
+  .answer-input.correct { border-color: var(--success); background: #f0fdf4; }
+  .answer-input.incorrect { border-color: var(--danger); background: #fef2f2; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    transition: background 0.15s;
+  }
+  .btn-check { background: var(--primary); color: white; }
+  .btn-check:hover { background: var(--primary-dark); }
+  .btn-skip { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  .btn-skip:hover { background: var(--border); }
+  .btn-next { background: var(--success); color: white; display: none; }
+  .btn-next:hover { background: #15803d; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    display: none;
+  }
+  .feedback.correct { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .feedback.incorrect { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* Score summary */
+  .summary {
+    display: none;
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .summary h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+  .summary .score-big {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 12px 0;
+  }
+  .summary p { color: var(--muted); margin-bottom: 20px; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Nav */
+  .nav { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .nav-btn {
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  @media (max-width: 480px) {
+    .question-text { font-size: 1.1rem; }
+    .stat-num { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kumon Maths Practice</h1>
+  <p id="subtitle">Loading questions…</p>
+</header>
+
+<div id="app">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Fetching question bank…</p>
+  </div>
+
+  <div id="main" style="display:none">
+    <!-- Mode nav -->
+    <div class="nav">
+      <button class="nav-btn active" onclick="setMode('practice')" id="nav-practice">Practice</button>
+      <button class="nav-btn" onclick="setMode('test')" id="nav-test">Test Mode</button>
+      <button class="nav-btn" onclick="setMode('review')" id="nav-review">Review Errors</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <select id="filter-age" onchange="applyFilters()">
+        <option value="">All Ages</option>
+      </select>
+      <select id="filter-topic" onchange="applyFilters()">
+        <option value="">All Topics</option>
+      </select>
+      <select id="filter-paper" onchange="applyFilters()">
+        <option value="">All Papers</option>
+      </select>
+      <button onclick="startSession()">▶ Start</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Remaining</div></div>
+      <div class="stat"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-label">Correct</div></div>
+      <div class="stat"><div class="stat-num" id="stat-wrong" style="color:var(--danger)">0</div><div class="stat-label">Wrong</div></div>
+      <div class="stat"><div class="stat-num" id="stat-score">—</div><div class="stat-label">Score</div></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <!-- Question card -->
+    <div class="card" id="question-card">
+      <div class="card-meta">
+        <span class="tag" id="tag-age"></span>
+        <span class="tag" id="tag-topic"></span>
+        <span class="tag stretch" id="tag-stretch" style="display:none">★ Stretch</span>
+        <span class="question-num" id="tag-ref"></span>
+      </div>
+      <div class="question-text" id="question-text">Select filters and press Start.</div>
+      <input class="answer-input" id="answer-input" type="text" placeholder="Your answer…"
+             onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <div class="btn-row">
+        <button class="btn btn-check" onclick="checkAnswer()">Check</button>
+        <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
+        <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card summary" id="summary">
+      <h2>Session Complete! 🎉</h2>
+      <div class="score-big" id="summary-score">—</div>
+      <p id="summary-detail"></p>
+      <button class="btn btn-check" onclick="startSession()" style="max-width:200px;margin:0 auto">Go Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+// Google Sheet ID — replace if the sheet is ever recreated
+const SHEET_ID = '1TuEC6i1JLJVTyPiy8haq7UbZBWQzI3DCjn8LYPUSmQg';
+// gid=0 means the first sheet tab; adjust if you add tabs
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allQuestions = [];
+let sessionQueue = [];
+let sessionIndex = 0;
+let correct = 0;
+let wrong = 0;
+let errorList = [];
+let mode = 'practice'; // practice | test | review
+let answered = false;
+
+// ── CSV parser ────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  let i = 0;
+  while (i < text.length) {
+    const row = [];
+    while (i < text.length && text[i] !== '\n') {
+      if (text[i] === '"') {
+        let cell = '';
+        i++;
+        while (i < text.length) {
+          if (text[i] === '"' && text[i+1] === '"') { cell += '"'; i += 2; }
+          else if (text[i] === '"') { i++; break; }
+          else { cell += text[i++]; }
+        }
+        row.push(cell);
+        if (text[i] === ',') i++;
+      } else {
+        let cell = '';
+        while (i < text.length && text[i] !== ',' && text[i] !== '\n') cell += text[i++];
+        row.push(cell);
+        if (text[i] === ',') i++;
+      }
+    }
+    if (text[i] === '\n') i++;
+    if (row.length > 1) rows.push(row);
+  }
+  return rows;
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    // Header: Subject,Age_Band,Paper_Number,Question_Number,Topic,Question,Answer,Marks,Notes
+    const header = rows[0];
+    allQuestions = rows.slice(1).map(r => ({
+      subject: r[0], age: r[1], paper: r[2], qnum: r[3],
+      topic: r[4], question: r[5], answer: r[6], marks: r[7], notes: r[8]
+    })).filter(q => q.question && q.answer);
+
+    populateFilters();
+    document.getElementById('subtitle').textContent =
+      `${allQuestions.length} questions loaded`;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    startSession();
+  } catch (e) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:var(--danger)">Could not load questions.<br><small>${e.message}</small></p>
+       <p style="color:var(--muted);margin-top:8px;font-size:0.85rem">Make sure the Google Sheet is published:<br>
+       File → Share → Publish to web → Entire Document → CSV → Publish</p>`;
+  }
+}
+
+function populateFilters() {
+  const ages  = [...new Set(allQuestions.map(q => q.age))].sort();
+  const topics = [...new Set(allQuestions.map(q => q.topic))].sort();
+  const papers = [...new Set(allQuestions.map(q => `Paper ${q.paper}`))].sort((a,b)=>
+    parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]));
+
+  fill('filter-age',   ages.map(v => [v, v]));
+  fill('filter-topic', topics.map(v => [v, v]));
+  fill('filter-paper', papers.map(v => [v, v.split(' ')[1]]));
+}
+
+function fill(id, pairs) {
+  const sel = document.getElementById(id);
+  pairs.forEach(([label, val]) => {
+    const opt = document.createElement('option');
+    opt.value = val; opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+function getFiltered() {
+  const age   = document.getElementById('filter-age').value;
+  const topic = document.getElementById('filter-topic').value;
+  const paper = document.getElementById('filter-paper').value;
+  return allQuestions.filter(q =>
+    (!age   || q.age === age) &&
+    (!topic || q.topic === topic) &&
+    (!paper || q.paper === paper)
+  );
+}
+
+function applyFilters() { /* live preview count could go here */ }
+
+// ── Session ───────────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  ['practice','test','review'].forEach(id => {
+    document.getElementById('nav-'+id).className =
+      'nav-btn' + (id === m ? ' active' : '');
+  });
+  startSession();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startSession() {
+  correct = 0; wrong = 0; answered = false;
+
+  if (mode === 'review') {
+    sessionQueue = [...errorList];
+    if (!sessionQueue.length) {
+      document.getElementById('question-text').textContent =
+        'No errors to review yet — do some practice first!';
+      return;
+    }
+  } else {
+    let pool = getFiltered();
+    if (!pool.length) pool = allQuestions;
+    sessionQueue = shuffle([...pool]);
+  }
+
+  sessionIndex = 0;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('question-card').style.display = 'block';
+  updateStats();
+  showQuestion();
+}
+
+function showQuestion() {
+  if (sessionIndex >= sessionQueue.length) {
+    showSummary(); return;
+  }
+  const q = sessionQueue[sessionIndex];
+  answered = false;
+
+  document.getElementById('tag-age').textContent   = q.age;
+  document.getElementById('tag-topic').textContent = q.topic;
+  document.getElementById('tag-ref').textContent   = `Paper ${q.paper} · Q${q.qnum}`;
+  document.getElementById('tag-stretch').style.display =
+    (q.notes && q.notes.includes('★')) ? 'inline-block' : 'none';
+
+  document.getElementById('question-text').textContent = q.question;
+
+  const inp = document.getElementById('answer-input');
+  inp.value = '';
+  inp.className = 'answer-input';
+  inp.disabled = false;
+  inp.focus();
+
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+  document.querySelector('.btn-check').style.display = 'inline-block';
+  document.querySelector('.btn-skip').style.display = 'inline-block';
+
+  updateStats();
+}
+
+function normalise(s) {
+  return s.toString().trim().toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/['']/g, "'");
+}
+
+function checkAnswer() {
+  if (answered) { nextQuestion(); return; }
+  const q = sessionQueue[sessionIndex];
+  const userAns = document.getElementById('answer-input').value.trim();
+  if (!userAns) return;
+
+  const correct_ans = q.answer;
+  const isCorrect = normalise(userAns) === normalise(correct_ans);
+
+  answered = true;
+  const inp = document.getElementById('answer-input');
+  inp.className = 'answer-input ' + (isCorrect ? 'correct' : 'incorrect');
+  inp.disabled = true;
+
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    correct++;
+    fb.className = 'feedback correct';
+    fb.textContent = '✓ Correct!';
+  } else {
+    wrong++;
+    if (!errorList.find(e => e.qnum === q.qnum && e.paper === q.paper)) {
+      errorList.push(q);
+    }
+    fb.className = 'feedback incorrect';
+    fb.textContent = `✗ The answer is: ${correct_ans}`;
+  }
+  fb.style.display = 'block';
+
+  document.querySelector('.btn-check').style.display = 'none';
+  document.querySelector('.btn-skip').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'inline-block';
+
+  updateStats();
+}
+
+function skipQuestion() {
+  sessionIndex++;
+  showQuestion();
+}
+
+function nextQuestion() {
+  sessionIndex++;
+  showQuestion();
+}
+
+function updateStats() {
+  const remaining = sessionQueue.length - sessionIndex;
+  const total = correct + wrong;
+  const pct = total > 0 ? Math.round(correct / total * 100) : '—';
+  const done = sessionIndex;
+  const total_q = sessionQueue.length;
+
+  document.getElementById('stat-remaining').textContent = remaining;
+  document.getElementById('stat-correct').textContent   = correct;
+  document.getElementById('stat-wrong').textContent     = wrong;
+  document.getElementById('stat-score').textContent     = pct === '—' ? '—' : pct + '%';
+
+  const pct_done = total_q > 0 ? (done / total_q * 100) : 0;
+  document.getElementById('progress-bar').style.width   = pct_done + '%';
+}
+
+function showSummary() {
+  document.getElementById('question-card').style.display = 'none';
+  const summary = document.getElementById('summary');
+  summary.style.display = 'block';
+  const total = correct + wrong;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  document.getElementById('summary-score').textContent = pct + '%';
+  document.getElementById('summary-detail').textContent =
+    `${correct} correct out of ${total} answered`;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

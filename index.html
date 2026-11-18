@@ -321,11 +321,16 @@
   .btn-save {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
-    max-width: 220px;
+    max-width: 340px;
     margin: 0 auto 10px;
     display: block;
+    font-size: 1.35rem;
+    padding: 18px 40px;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    border-radius: 16px;
   }
-  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+  .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
   .btn-save:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
 
   /* Feedback */
@@ -590,7 +595,7 @@
             <div class="chooser-desc" id="chooser-humanities-count"></div>
           </button>
           <button class="chooser-btn" onclick="chooseSubject('French')">
-            <div class="chooser-icon">🇫🇷</div>
+            <div class="chooser-icon"><svg width="48" height="32" viewBox="0 0 48 32" style="border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.15)"><rect width="16" height="32" fill="#002395"/><rect x="16" width="16" height="32" fill="#fff"/><rect x="32" width="16" height="32" fill="#ED2939"/></svg></div>
             <div class="chooser-label">French</div>
             <div class="chooser-desc" id="chooser-french-count"></div>
           </button>

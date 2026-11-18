@@ -238,6 +238,29 @@
     font-weight: 600;
   }
   .tag.stretch { background: #fef3c7; color: #92400e; }
+
+  /* Stacked sum */
+  .stacked-sum {
+    display: inline-block;
+    text-align: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 8px auto 24px;
+    color: var(--text);
+  }
+  .stacked-sum .top-num { display: block; padding-right: 4px; }
+  .stacked-sum .bot-row { display: block; padding-right: 4px; }
+  .stacked-sum .sum-line {
+    display: block;
+    border-top: 3px solid var(--text);
+    height: 0;
+    margin-top: 4px;
+  }
+  @media (max-width: 480px) {
+    .stacked-sum { font-size: 1.5rem; }
+  }
   .question-num {
     font-size: 0.75rem;
     color: var(--muted);
@@ -996,6 +1019,19 @@ function startSession() {
   showQuestion();
 }
 
+function tryStackedSum(text) {
+  var m = text.match(/^\s*(\d[\d,]*\.?\d*)\s*([+\-−×x÷–*\/])\s*(\d[\d,]*\.?\d*)\s*=?\s*$/);
+  if (!m) return null;
+  var top = m[1].replace(/,/g, '');
+  var bot = m[3].replace(/,/g, '');
+  if (top.length < 2 && bot.length < 2) return null;
+  var op = m[2];
+  if (op === '-' || op === '–' || op === '−') op = '−';
+  else if (op === 'x' || op === '*' || op === '×') op = '×';
+  else if (op === '/' || op === '÷') op = '÷';
+  return { top: top, bot: bot, op: op };
+}
+
 function showQuestion() {
   if (sessionIndex >= sessionQueue.length) { showSummary(); return; }
   var q = sessionQueue[sessionIndex];
@@ -1007,9 +1043,16 @@ function showQuestion() {
   document.getElementById('tag-stretch').style.display =
     (q.notes && q.notes.indexOf('★') !== -1) ? 'inline-block' : 'none';
 
-  var qText = q.question;
-  if (needsUnits(q.answer)) qText += ' (State the units.)';
-  document.getElementById('question-text').textContent = qText;
+  var qEl = document.getElementById('question-text');
+  var stacked = tryStackedSum(q.question);
+  if (stacked) {
+    var unitsHint = needsUnits(q.answer) ? '<div style="font-size:0.85rem;color:var(--muted);font-family:inherit;margin-top:8px">(State the units.)</div>' : '';
+    qEl.innerHTML = '<div class="stacked-sum"><span class="top-num">' + stacked.top + '</span><span class="bot-row">' + stacked.op + ' ' + stacked.bot + '</span><span class="sum-line">&nbsp;</span></div>' + unitsHint;
+  } else {
+    var qText = q.question;
+    if (needsUnits(q.answer)) qText += ' (State the units.)';
+    qEl.textContent = qText;
+  }
 
   var inp = document.getElementById('answer-input');
   inp.value = '';

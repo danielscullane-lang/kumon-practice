@@ -769,6 +769,11 @@
             <div class="chooser-label">11+</div>
             <div class="chooser-desc" id="chooser-11plus-count"></div>
           </button>
+          <button class="chooser-btn" onclick="chooseSubject('Decisions')">
+            <div class="chooser-icon">⚖️</div>
+            <div class="chooser-label">Decisions</div>
+            <div class="chooser-desc" id="chooser-decisions-count"></div>
+          </button>
           <button class="chooser-btn" onclick="chooseSubject('Mix')">
             <div class="chooser-icon">🎲</div>
             <div class="chooser-label">Pick &amp; Mix</div>
@@ -901,7 +906,7 @@
 </div>
 
 <script>
-var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRTK9ObW_9C797mOagnxHKDLm_LOGkqVpoQ_LlgJOMOeJi1Rwx_hfqUQd_pA2TsYaac8LCKormzfTTi/pub?output=csv';
+var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvukNo2QwLKb7sNykVEhdHAHh0YG5GF1EBRC969J6cdZdfrS379jHylveKbgOyD0rl0M1tbw8P-TJs/pub?output=csv';
 
 // SET THESE AFTER GOOGLE APPS SCRIPT SETUP:
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzmfpJhzfvHQPWluxaXaWX8vhcnqwoSMpDEExAdWg87edhvxkBirTQSuQ97-Dnj05/exec';
@@ -985,6 +990,13 @@ var GREETINGS_11PLUS = [
   'You\'ve got this, Alannah!',
   'Ready for a challenge?',
 ];
+var GREETINGS_DECISIONS = [
+  'Time to think things through, Alannah!',
+  'What would YOU do?',
+  'Let\'s make some good choices!',
+  'Thinking caps on, Alannah!',
+];
+
 var GREETINGS_MIX = [
   'You\'ve got this, Alannah!',
   'Ready for a bit of everything?',
@@ -1148,7 +1160,7 @@ function renderHistory() {
 // ── Results dashboard ────────────────────────────────────────────────────────
 var SUBJECT_COLORS = {
   'Maths': '#8b5cf6', 'English': '#3b82f6', 'Humanities': '#10b981',
-  'French': '#002395', 'Music': '#ec4899', '11+': '#f59e0b', 'Mix': '#6b7280'
+  'French': '#002395', 'Music': '#ec4899', '11+': '#f59e0b', 'Decisions': '#14b8a6', 'Mix': '#6b7280'
 };
 
 function showResults() {
@@ -1316,6 +1328,8 @@ function showChooser() {
   document.getElementById('chooser-music-count').textContent = musicCount > 0 ? musicCount + ' questions' : 'Coming soon!';
   var elevenCount = allQuestions.filter(function(q) { return q.subject === '11+'; }).length;
   document.getElementById('chooser-11plus-count').textContent = elevenCount > 0 ? elevenCount + ' questions' : 'Coming soon!';
+  var decisionsCount = allQuestions.filter(function(q) { return q.subject === 'Decisions'; }).length;
+  document.getElementById('chooser-decisions-count').textContent = decisionsCount > 0 ? decisionsCount + ' questions' : 'Coming soon!';
   document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
@@ -1325,7 +1339,7 @@ function showChooser() {
 
 function chooseSubject(subj) {
   chosenSubject = subj;
-  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Decisions' ? GREETINGS_DECISIONS : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
   var pool = subj === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === subj; });
   if (pool.length === 0) {
     document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';
@@ -1489,7 +1503,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    var batchSize = chosenSubject === '11+' ? 10 : 20;
+    var batchSize = (chosenSubject === '11+' || chosenSubject === 'Decisions') ? 10 : 20;
     sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 

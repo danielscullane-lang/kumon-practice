@@ -3,38 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kumon Maths Practice</title>
+<title>Alannah's Maths Practice</title>
 <style>
   :root {
-    --bg: #f5f7fa;
+    --bg: #faf5ff;
     --card: #ffffff;
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --text: #1e293b;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --tag-bg: #eff6ff;
-    --tag-text: #1d4ed8;
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --primary-light: #ede9fe;
+    --secondary: #ec4899;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --danger: #f43f5e;
+    --danger-bg: #fff1f2;
+    --text: #1e1b4b;
+    --muted: #6b7280;
+    --border: #e9d5ff;
+    --tag-bg: #fdf2f8;
+    --tag-text: #be185d;
+    --shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
+    --shadow-lg: 0 8px 30px rgba(139, 92, 246, 0.15);
+    --radius: 16px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: var(--bg);
+    background-image: radial-gradient(circle at 20% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.07) 0%, transparent 50%);
     color: var(--text);
     min-height: 100vh;
-    padding: 16px;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
   }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+  }
+
   header {
     text-align: center;
-    padding: 20px 0 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 20px;
+    padding: 24px 0 20px;
+    margin-bottom: 24px;
   }
-  header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-  header p { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+  header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header .greeting {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  /* Badge shelf */
+  .badge-shelf {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: #f3f4f6;
+    border: 2px dashed #d1d5db;
+    transition: all 0.4s ease;
+    position: relative;
+  }
+  .badge.earned {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid #f59e0b;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+    animation: badgePop 0.5s ease;
+  }
+  .badge .badge-label {
+    position: absolute;
+    bottom: -18px;
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  @keyframes badgePop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3) rotate(10deg); }
+    70% { transform: scale(0.95) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  /* Streak */
+  .streak-bar {
+    text-align: center;
+    margin-bottom: 20px;
+    min-height: 28px;
+  }
+  .streak-text {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    animation: streakGlow 1s ease infinite alternate;
+  }
+  @keyframes streakGlow {
+    from { box-shadow: 0 0 8px rgba(251, 191, 36, 0.4); }
+    to { box-shadow: 0 0 16px rgba(251, 191, 36, 0.7); }
+  }
 
   /* Filters */
   .filters {
@@ -43,28 +135,32 @@
     gap: 10px;
     margin-bottom: 20px;
     background: var(--card);
-    padding: 14px;
-    border-radius: 10px;
+    padding: 16px;
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
   }
   .filters select, .filters button {
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
     font-size: 0.9rem;
     background: white;
     color: var(--text);
     cursor: pointer;
     flex: 1;
     min-width: 120px;
+    font-weight: 500;
   }
+  .filters select:focus { border-color: var(--primary); outline: none; }
   .filters button {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
-    border-color: var(--primary);
-    font-weight: 600;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
   }
-  .filters button:hover { background: var(--primary-dark); }
+  .filters button:hover { opacity: 0.9; transform: translateY(-1px); }
 
   /* Stats bar */
   .stats {
@@ -75,27 +171,27 @@
   }
   .stat {
     background: var(--card);
-    border-radius: 8px;
-    padding: 10px 14px;
+    border-radius: 12px;
+    padding: 12px 14px;
     box-shadow: var(--shadow);
     flex: 1;
-    min-width: 90px;
+    min-width: 80px;
     text-align: center;
   }
-  .stat-num { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .stat-num { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 0.7rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
 
   /* Progress bar */
   .progress-wrap {
-    background: var(--border);
+    background: var(--primary-light);
     border-radius: 100px;
-    height: 8px;
+    height: 10px;
     margin-bottom: 20px;
     overflow: hidden;
   }
   .progress-bar {
     height: 100%;
-    background: var(--primary);
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
     border-radius: 100px;
     transition: width 0.4s ease;
   }
@@ -103,228 +199,352 @@
   /* Question card */
   .card {
     background: var(--card);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    box-shadow: var(--shadow-lg);
     margin-bottom: 16px;
+    border: 1px solid rgba(139, 92, 246, 0.08);
   }
   .card-meta {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
   .tag {
     font-size: 0.75rem;
-    padding: 3px 9px;
+    padding: 4px 12px;
     border-radius: 100px;
     background: var(--tag-bg);
     color: var(--tag-text);
-    font-weight: 500;
+    font-weight: 600;
   }
   .tag.stretch { background: #fef3c7; color: #92400e; }
   .question-num {
     font-size: 0.75rem;
     color: var(--muted);
     font-weight: 600;
+    margin-left: auto;
   }
   .question-text {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1.5;
-    margin-bottom: 20px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 24px;
     color: var(--text);
   }
   .answer-input {
     width: 100%;
-    padding: 12px 14px;
+    padding: 14px 16px;
     border: 2px solid var(--border);
-    border-radius: 8px;
-    font-size: 1.1rem;
+    border-radius: 12px;
+    font-size: 1.15rem;
     outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 12px;
+    transition: all 0.2s;
+    margin-bottom: 14px;
+    font-weight: 500;
   }
-  .answer-input:focus { border-color: var(--primary); }
-  .answer-input.correct { border-color: var(--success); background: #f0fdf4; }
-  .answer-input.incorrect { border-color: var(--danger); background: #fef2f2; }
+  .answer-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .answer-input.correct { border-color: var(--success); background: var(--success-bg); }
+  .answer-input.incorrect { border-color: var(--danger); background: var(--danger-bg); }
 
   .btn-row {
     display: flex;
     gap: 10px;
   }
   .btn {
-    padding: 11px 20px;
+    padding: 13px 20px;
     border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
     flex: 1;
-    transition: background 0.15s;
+    transition: all 0.15s;
   }
-  .btn-check { background: var(--primary); color: white; }
-  .btn-check:hover { background: var(--primary-dark); }
-  .btn-skip { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-  .btn-skip:hover { background: var(--border); }
-  .btn-next { background: var(--success); color: white; display: none; }
-  .btn-next:hover { background: #15803d; }
+  .btn-check {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+  }
+  .btn-check:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
+  .btn-skip { background: var(--primary-light); color: var(--primary); }
+  .btn-skip:hover { background: #ddd6fe; }
+  .btn-next { background: linear-gradient(135deg, var(--success), #059669); color: white; display: none; }
+  .btn-next:hover { transform: translateY(-1px); }
 
   /* Feedback */
   .feedback {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
     display: none;
   }
-  .feedback.correct { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-  .feedback.incorrect { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .feedback.correct { background: var(--success-bg); color: #065f46; border: 1px solid #a7f3d0; }
+  .feedback.incorrect { background: var(--danger-bg); color: #9f1239; border: 1px solid #fecdd3; }
 
   /* Score summary */
   .summary {
     display: none;
     text-align: center;
-    padding: 30px 20px;
+    padding: 36px 24px;
   }
-  .summary h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+  .summary h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; color: var(--text); }
   .summary .score-big {
-    font-size: 3rem;
-    font-weight: 800;
-    color: var(--primary);
-    margin: 12px 0;
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 16px 0;
   }
-  .summary p { color: var(--muted); margin-bottom: 20px; }
+  .summary p { color: var(--muted); margin-bottom: 8px; font-size: 1.05rem; }
+  .summary .badges-earned {
+    font-size: 2rem;
+    margin: 16px 0 24px;
+    letter-spacing: 6px;
+  }
 
   /* Loading */
   .loading {
     text-align: center;
-    padding: 40px;
+    padding: 60px 20px;
     color: var(--muted);
   }
   .spinner {
-    width: 36px; height: 36px;
+    width: 40px; height: 40px;
     border: 3px solid var(--border);
     border-top-color: var(--primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
+    margin: 0 auto 16px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Nav */
   .nav { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
   .nav-btn {
-    padding: 7px 16px;
+    padding: 9px 20px;
     border-radius: 100px;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     background: var(--card);
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.15s;
   }
-  .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .nav-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .nav-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-color: transparent;
+  }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1000;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scale(0.3); }
+  }
+
+  /* Badge popup */
+  .badge-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: white;
+    border-radius: 24px;
+    padding: 32px 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 999;
+    animation: popIn 0.5s ease forwards;
+  }
+  .badge-popup .emoji { font-size: 4rem; margin-bottom: 12px; }
+  .badge-popup .title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+  .badge-popup .sub { font-size: 0.95rem; color: var(--muted); margin-top: 4px; }
+  @keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0); }
+    60% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
 
   @media (max-width: 480px) {
-    .question-text { font-size: 1.1rem; }
+    .container { max-width: 100%; }
+    .question-text { font-size: 1.15rem; }
     .stat-num { font-size: 1.2rem; }
+    .badge { width: 44px; height: 44px; font-size: 1.3rem; }
+    header h1 { font-size: 1.5rem; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Kumon Maths Practice</h1>
-  <p id="subtitle">Loading questions…</p>
-</header>
+<div class="container">
+  <header>
+    <h1>Alannah's Maths Practice</h1>
+    <p class="greeting" id="greeting">Loading your questions...</p>
+  </header>
 
-<div id="app">
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <p>Fetching question bank…</p>
-  </div>
-
-  <div id="main" style="display:none">
-    <!-- Mode nav -->
-    <div class="nav">
-      <button class="nav-btn active" onclick="setMode('practice')" id="nav-practice">Practice</button>
-      <button class="nav-btn" onclick="setMode('test')" id="nav-test">Test Mode</button>
-      <button class="nav-btn" onclick="setMode('review')" id="nav-review">Review Errors</button>
+  <div id="app">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Fetching question bank...</p>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <select id="filter-age" onchange="applyFilters()">
-        <option value="">All Ages</option>
-      </select>
-      <select id="filter-topic" onchange="applyFilters()">
-        <option value="">All Topics</option>
-      </select>
-      <select id="filter-paper" onchange="applyFilters()">
-        <option value="">All Papers</option>
-      </select>
-      <button onclick="startSession()">▶ Start</button>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Remaining</div></div>
-      <div class="stat"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-label">Correct</div></div>
-      <div class="stat"><div class="stat-num" id="stat-wrong" style="color:var(--danger)">0</div><div class="stat-label">Wrong</div></div>
-      <div class="stat"><div class="stat-num" id="stat-score">—</div><div class="stat-label">Score</div></div>
-    </div>
-
-    <!-- Progress -->
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
-    </div>
-
-    <!-- Question card -->
-    <div class="card" id="question-card">
-      <div class="card-meta">
-        <span class="tag" id="tag-age"></span>
-        <span class="tag" id="tag-topic"></span>
-        <span class="tag stretch" id="tag-stretch" style="display:none">★ Stretch</span>
-        <span class="question-num" id="tag-ref"></span>
+    <div id="main" style="display:none">
+      <!-- Badge shelf -->
+      <div class="badge-shelf" id="badge-shelf">
+        <div class="badge" id="badge-0" data-emoji="&#11088;"><span class="badge-label">Star</span></div>
+        <div class="badge" id="badge-1" data-emoji="&#129412;"><span class="badge-label">Unicorn</span></div>
+        <div class="badge" id="badge-2" data-emoji="&#127822;"><span class="badge-label">Apple</span></div>
+        <div class="badge" id="badge-3" data-emoji="&#129365;"><span class="badge-label">Carrot</span></div>
+        <div class="badge" id="badge-4" data-emoji="&#128048;"><span class="badge-label">Bunny</span></div>
       </div>
-      <div class="question-text" id="question-text">Select filters and press Start.</div>
-      <input class="answer-input" id="answer-input" type="text" placeholder="Your answer…"
-             onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-      <div class="btn-row">
-        <button class="btn btn-check" onclick="checkAnswer()">Check</button>
-        <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
-        <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
-      </div>
-      <div class="feedback" id="feedback"></div>
-    </div>
 
-    <!-- Summary -->
-    <div class="card summary" id="summary">
-      <h2>Session Complete! 🎉</h2>
-      <div class="score-big" id="summary-score">—</div>
-      <p id="summary-detail"></p>
-      <button class="btn btn-check" onclick="startSession()" style="max-width:200px;margin:0 auto">Go Again</button>
+      <!-- Streak -->
+      <div class="streak-bar" id="streak-bar"></div>
+
+      <!-- Mode nav -->
+      <div class="nav">
+        <button class="nav-btn active" onclick="setMode('practice')" id="nav-practice">Practice</button>
+        <button class="nav-btn" onclick="setMode('test')" id="nav-test">Test Mode</button>
+        <button class="nav-btn" onclick="setMode('review')" id="nav-review">Review Errors</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <select id="filter-age" onchange="applyFilters()">
+          <option value="">All Ages</option>
+        </select>
+        <select id="filter-topic" onchange="applyFilters()">
+          <option value="">All Topics</option>
+        </select>
+        <select id="filter-paper" onchange="applyFilters()">
+          <option value="">All Papers</option>
+        </select>
+        <button onclick="startSession()">Let's Go!</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Left</div></div>
+        <div class="stat"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-label">Correct</div></div>
+        <div class="stat"><div class="stat-num" id="stat-wrong" style="color:var(--danger)">0</div><div class="stat-label">Wrong</div></div>
+        <div class="stat"><div class="stat-num" id="stat-score">-</div><div class="stat-label">Score</div></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+
+      <!-- Question card -->
+      <div class="card" id="question-card">
+        <div class="card-meta">
+          <span class="tag" id="tag-age"></span>
+          <span class="tag" id="tag-topic"></span>
+          <span class="tag stretch" id="tag-stretch" style="display:none">Stretch</span>
+          <span class="question-num" id="tag-ref"></span>
+        </div>
+        <div class="question-text" id="question-text">Pick your filters and press Let's Go!</div>
+        <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
+               onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn btn-check" onclick="checkAnswer()">Check</button>
+          <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
+          <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Next</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card summary" id="summary">
+        <h2 id="summary-title">Session Complete!</h2>
+        <div class="score-big" id="summary-score">-</div>
+        <p id="summary-detail"></p>
+        <div class="badges-earned" id="summary-badges"></div>
+        <p id="summary-message" style="font-weight:600;color:var(--primary);margin-bottom:20px"></p>
+        <button class="btn btn-check" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── Config ────────────────────────────────────────────────────────────────────
-// Google Sheet ID — replace if the sheet is ever recreated
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZo_U7fRDtIzQ1Qw_jVbVDotRNjhGHXwYcuwVYFxJfctZlmBC_AX2iHPIbJCAqfEqV_d7h1DfmL2SX/pub?output=csv';
 
-// ── State ─────────────────────────────────────────────────────────────────────
+const BADGES = [
+  { emoji: '⭐', name: 'Star' },
+  { emoji: '🦄', name: 'Unicorn' },
+  { emoji: '🍎', name: 'Apple' },
+  { emoji: '🥕', name: 'Carrot' },
+  { emoji: '🐰', name: 'Bunny' },
+];
+
+const PRAISE = [
+  'Brilliant, Alannah!',
+  'You\'re on fire!',
+  'Superstar!',
+  'Nailed it!',
+  'Amazing work, Alannah!',
+  'You\'re smashing it!',
+  'Fantastic!',
+  'Way to go!',
+  'That\'s the one!',
+  'Alannah, you legend!',
+  'Perfect!',
+  'Boom! Correct!',
+  'Maths queen!',
+  'Unstoppable!',
+];
+
+const FULL_NAME_PRAISE = [
+  'Alannah Niamh Sophia Scullane, you absolute genius!',
+  'Take a bow, Alannah Niamh Sophia Scullane!',
+  'Alannah Niamh Sophia Scullane strikes again!',
+  'The one and only Alannah Niamh Sophia Scullane!',
+];
+
+const ENCOURAGE = [
+  'Nearly, Alannah! You\'ll get the next one.',
+  'Good try! Keep going.',
+  'Don\'t worry - you\'re learning!',
+  'So close! Next one is yours.',
+  'That\'s a tricky one. Onwards!',
+  'Every mistake makes you stronger!',
+  'Keep at it, Alannah!',
+];
+
+const GREETINGS = [
+  'You\'ve got this, Alannah!',
+  'Ready to be brilliant, Alannah?',
+  'Let\'s do some maths magic!',
+  'Time to shine, Alannah!',
+];
+
 let allQuestions = [];
 let sessionQueue = [];
 let sessionIndex = 0;
 let correct = 0;
 let wrong = 0;
+let streak = 0;
+let badgesEarned = 0;
 let errorList = [];
-let mode = 'practice'; // practice | test | review
+let mode = 'practice';
 let answered = false;
 
-// ── CSV parser ────────────────────────────────────────────────────────────────
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function parseCSV(text) {
   const rows = [];
   let i = 0;
@@ -354,73 +574,64 @@ function parseCSV(text) {
   return rows;
 }
 
-// ── Load data ─────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
     const res = await fetch(CSV_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const rows = parseCSV(text);
-    // Header: Subject,Age_Band,Paper_Number,Question_Number,Topic,Question,Answer,Marks,Notes
-    const header = rows[0];
     allQuestions = rows.slice(1).map(r => ({
       subject: r[0], age: r[1], paper: r[2], qnum: r[3],
       topic: r[4], question: r[5], answer: r[6], marks: r[7], notes: r[8]
     })).filter(q => q.question && q.answer);
 
     populateFilters();
-    document.getElementById('subtitle').textContent =
-      `${allQuestions.length} questions loaded`;
+    document.getElementById('greeting').textContent = pick(GREETINGS) + ' ' + allQuestions.length + ' questions ready.';
     document.getElementById('loading').style.display = 'none';
     document.getElementById('main').style.display = 'block';
     startSession();
   } catch (e) {
     document.getElementById('loading').innerHTML =
-      `<p style="color:var(--danger)">Could not load questions.<br><small>${e.message}</small></p>
-       <p style="color:var(--muted);margin-top:8px;font-size:0.85rem">Make sure the Google Sheet is published:<br>
-       File → Share → Publish to web → Entire Document → CSV → Publish</p>`;
+      '<p style="color:var(--danger)">Could not load questions.<br><small>' + e.message + '</small></p>' +
+      '<p style="color:var(--muted);margin-top:8px;font-size:0.85rem">Make sure the Google Sheet is published:<br>' +
+      'File → Share → Publish to web → Entire Document → CSV → Publish</p>';
   }
 }
 
 function populateFilters() {
-  const ages  = [...new Set(allQuestions.map(q => q.age))].sort();
+  const ages = [...new Set(allQuestions.map(q => q.age))].sort();
   const topics = [...new Set(allQuestions.map(q => q.topic))].sort();
-  const papers = [...new Set(allQuestions.map(q => `Paper ${q.paper}`))].sort((a,b)=>
+  const papers = [...new Set(allQuestions.map(q => 'Paper ' + q.paper))].sort((a,b) =>
     parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]));
-
-  fill('filter-age',   ages.map(v => [v, v]));
+  fill('filter-age', ages.map(v => [v, v]));
   fill('filter-topic', topics.map(v => [v, v]));
   fill('filter-paper', papers.map(v => [v, v.split(' ')[1]]));
 }
 
 function fill(id, pairs) {
   const sel = document.getElementById(id);
-  pairs.forEach(([label, val]) => {
+  pairs.forEach(function(p) {
     const opt = document.createElement('option');
-    opt.value = val; opt.textContent = label;
+    opt.value = p[1]; opt.textContent = p[0];
     sel.appendChild(opt);
   });
 }
 
 function getFiltered() {
-  const age   = document.getElementById('filter-age').value;
+  const age = document.getElementById('filter-age').value;
   const topic = document.getElementById('filter-topic').value;
   const paper = document.getElementById('filter-paper').value;
-  return allQuestions.filter(q =>
-    (!age   || q.age === age) &&
-    (!topic || q.topic === topic) &&
-    (!paper || q.paper === paper)
-  );
+  return allQuestions.filter(function(q) {
+    return (!age || q.age === age) && (!topic || q.topic === topic) && (!paper || q.paper === paper);
+  });
 }
 
-function applyFilters() { /* live preview count could go here */ }
+function applyFilters() {}
 
-// ── Session ───────────────────────────────────────────────────────────────────
 function setMode(m) {
   mode = m;
-  ['practice','test','review'].forEach(id => {
-    document.getElementById('nav-'+id).className =
-      'nav-btn' + (id === m ? ' active' : '');
+  ['practice','test','review'].forEach(function(id) {
+    document.getElementById('nav-' + id).className = 'nav-btn' + (id === m ? ' active' : '');
   });
   startSession();
 }
@@ -428,25 +639,88 @@ function setMode(m) {
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
   }
   return arr;
 }
 
+function resetBadges() {
+  badgesEarned = 0;
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById('badge-' + i);
+    el.className = 'badge';
+    el.textContent = '';
+    el.appendChild(makeBadgeLabel(BADGES[i].name));
+  }
+}
+
+function makeBadgeLabel(name) {
+  const span = document.createElement('span');
+  span.className = 'badge-label';
+  span.textContent = name;
+  return span;
+}
+
+function awardBadge() {
+  if (badgesEarned >= 5) return;
+  const idx = badgesEarned;
+  badgesEarned++;
+  const el = document.getElementById('badge-' + idx);
+  el.className = 'badge earned';
+  el.textContent = BADGES[idx].emoji;
+  el.appendChild(makeBadgeLabel(BADGES[idx].name));
+  showBadgePopup(BADGES[idx]);
+}
+
+function showBadgePopup(badge) {
+  const popup = document.createElement('div');
+  popup.className = 'badge-popup';
+  popup.innerHTML = '<div class="emoji">' + badge.emoji + '</div><div class="title">Badge Earned!</div><div class="sub">You collected the ' + badge.name + '!</div>';
+  document.body.appendChild(popup);
+  setTimeout(function() { popup.remove(); }, 1800);
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  var colors = ['#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444'];
+  for (let i = 0; i < 30; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.top = '-10px';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    document.body.appendChild(piece);
+    setTimeout(function() { piece.remove(); }, 4000);
+  }
+}
+
+function getBadgeThresholds(total) {
+  if (total <= 0) return [1, 2, 3, 4, 5];
+  var step = Math.max(1, Math.floor(total / 5));
+  return [step, step * 2, step * 3, step * 4, total];
+}
+
 function startSession() {
-  correct = 0; wrong = 0; answered = false;
+  correct = 0; wrong = 0; streak = 0; answered = false;
+  resetBadges();
+  updateStreak();
 
   if (mode === 'review') {
-    sessionQueue = [...errorList];
+    sessionQueue = errorList.slice();
     if (!sessionQueue.length) {
       document.getElementById('question-text').textContent =
-        'No errors to review yet — do some practice first!';
+        'No errors to review yet, Alannah — do some practice first!';
       return;
     }
   } else {
-    let pool = getFiltered();
+    var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    sessionQueue = shuffle([...pool]);
+    sessionQueue = shuffle(pool.slice());
   }
 
   sessionIndex = 0;
@@ -457,21 +731,19 @@ function startSession() {
 }
 
 function showQuestion() {
-  if (sessionIndex >= sessionQueue.length) {
-    showSummary(); return;
-  }
-  const q = sessionQueue[sessionIndex];
+  if (sessionIndex >= sessionQueue.length) { showSummary(); return; }
+  var q = sessionQueue[sessionIndex];
   answered = false;
 
-  document.getElementById('tag-age').textContent   = q.age;
+  document.getElementById('tag-age').textContent = q.age;
   document.getElementById('tag-topic').textContent = q.topic;
-  document.getElementById('tag-ref').textContent   = `Paper ${q.paper} · Q${q.qnum}`;
+  document.getElementById('tag-ref').textContent = 'Paper ' + q.paper + ' · Q' + q.qnum;
   document.getElementById('tag-stretch').style.display =
-    (q.notes && q.notes.includes('★')) ? 'inline-block' : 'none';
+    (q.notes && q.notes.indexOf('★') !== -1) ? 'inline-block' : 'none';
 
   document.getElementById('question-text').textContent = q.question;
 
-  const inp = document.getElementById('answer-input');
+  var inp = document.getElementById('answer-input');
   inp.value = '';
   inp.className = 'answer-input';
   inp.disabled = false;
@@ -486,37 +758,44 @@ function showQuestion() {
 }
 
 function normalise(s) {
-  return s.toString().trim().toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/['']/g, "'");
+  return s.toString().trim().toLowerCase().replace(/\s+/g, ' ').replace(/[‘’]/g, "'");
 }
 
 function checkAnswer() {
   if (answered) { nextQuestion(); return; }
-  const q = sessionQueue[sessionIndex];
-  const userAns = document.getElementById('answer-input').value.trim();
+  var q = sessionQueue[sessionIndex];
+  var userAns = document.getElementById('answer-input').value.trim();
   if (!userAns) return;
 
-  const correct_ans = q.answer;
-  const isCorrect = normalise(userAns) === normalise(correct_ans);
+  var correctAns = q.answer;
+  var isCorrect = normalise(userAns) === normalise(correctAns);
 
   answered = true;
-  const inp = document.getElementById('answer-input');
+  var inp = document.getElementById('answer-input');
   inp.className = 'answer-input ' + (isCorrect ? 'correct' : 'incorrect');
   inp.disabled = true;
 
-  const fb = document.getElementById('feedback');
+  var fb = document.getElementById('feedback');
   if (isCorrect) {
     correct++;
+    streak++;
+    var msg = (Math.random() < 0.08) ? pick(FULL_NAME_PRAISE) : pick(PRAISE);
+    if (streak >= 3) msg += ' (' + streak + ' in a row!)';
     fb.className = 'feedback correct';
-    fb.textContent = '✓ Correct!';
+    fb.textContent = msg;
+
+    var thresholds = getBadgeThresholds(sessionQueue.length);
+    if (thresholds.indexOf(correct) !== -1 && badgesEarned < 5) {
+      awardBadge();
+    }
   } else {
     wrong++;
-    if (!errorList.find(e => e.qnum === q.qnum && e.paper === q.paper)) {
+    streak = 0;
+    if (!errorList.find(function(e) { return e.qnum === q.qnum && e.paper === q.paper; })) {
       errorList.push(q);
     }
     fb.className = 'feedback incorrect';
-    fb.textContent = `✗ The answer is: ${correct_ans}`;
+    fb.textContent = pick(ENCOURAGE) + ' The answer was: ' + correctAns;
   }
   fb.style.display = 'block';
 
@@ -524,10 +803,13 @@ function checkAnswer() {
   document.querySelector('.btn-skip').style.display = 'none';
   document.getElementById('btn-next').style.display = 'inline-block';
 
+  updateStreak();
   updateStats();
 }
 
 function skipQuestion() {
+  streak = 0;
+  updateStreak();
   sessionIndex++;
   showQuestion();
 }
@@ -537,34 +819,54 @@ function nextQuestion() {
   showQuestion();
 }
 
+function updateStreak() {
+  var bar = document.getElementById('streak-bar');
+  if (streak >= 3) {
+    bar.innerHTML = '<span class="streak-text">🔥 ' + streak + ' in a row!</span>';
+  } else {
+    bar.innerHTML = '';
+  }
+}
+
 function updateStats() {
-  const remaining = sessionQueue.length - sessionIndex;
-  const total = correct + wrong;
-  const pct = total > 0 ? Math.round(correct / total * 100) : '—';
-  const done = sessionIndex;
-  const total_q = sessionQueue.length;
+  var remaining = sessionQueue.length - sessionIndex;
+  var total = correct + wrong;
+  var pct = total > 0 ? Math.round(correct / total * 100) : '-';
 
   document.getElementById('stat-remaining').textContent = remaining;
-  document.getElementById('stat-correct').textContent   = correct;
-  document.getElementById('stat-wrong').textContent     = wrong;
-  document.getElementById('stat-score').textContent     = pct === '—' ? '—' : pct + '%';
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-score').textContent = pct === '-' ? '-' : pct + '%';
 
-  const pct_done = total_q > 0 ? (done / total_q * 100) : 0;
-  document.getElementById('progress-bar').style.width   = pct_done + '%';
+  var pctDone = sessionQueue.length > 0 ? (sessionIndex / sessionQueue.length * 100) : 0;
+  document.getElementById('progress-bar').style.width = pctDone + '%';
 }
 
 function showSummary() {
   document.getElementById('question-card').style.display = 'none';
-  const summary = document.getElementById('summary');
+  var summary = document.getElementById('summary');
   summary.style.display = 'block';
-  const total = correct + wrong;
-  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  var total = correct + wrong;
+  var pct = total > 0 ? Math.round(correct / total * 100) : 0;
   document.getElementById('summary-score').textContent = pct + '%';
-  document.getElementById('summary-detail').textContent =
-    `${correct} correct out of ${total} answered`;
+  document.getElementById('summary-detail').textContent = correct + ' correct out of ' + total + ' answered';
+
+  var badgeStr = '';
+  for (var i = 0; i < badgesEarned; i++) badgeStr += BADGES[i].emoji;
+  document.getElementById('summary-badges').textContent = badgeStr || '';
+
+  var msg = '';
+  if (pct === 100) msg = 'PERFECT SCORE! Alannah Niamh Sophia Scullane, you are a maths superstar!';
+  else if (pct >= 80) msg = 'Brilliant work, Alannah! You\'re so close to perfection!';
+  else if (pct >= 60) msg = 'Great effort, Alannah! Keep practising and you\'ll smash it!';
+  else msg = 'Good try, Alannah! Every session makes you stronger!';
+  document.getElementById('summary-message').textContent = msg;
+  document.getElementById('summary-title').textContent =
+    badgesEarned === 5 ? 'ALL BADGES COLLECTED!' : 'Session Complete!';
+
+  if (badgesEarned >= 3) spawnConfetti();
 }
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
 loadData();
 </script>
 </body>

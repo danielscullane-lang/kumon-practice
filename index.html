@@ -604,6 +604,11 @@
             <div class="chooser-label">Music</div>
             <div class="chooser-desc" id="chooser-music-count"></div>
           </button>
+          <button class="chooser-btn" onclick="chooseSubject('11+')">
+            <div class="chooser-icon">🎓</div>
+            <div class="chooser-label">11+</div>
+            <div class="chooser-desc" id="chooser-11plus-count"></div>
+          </button>
           <button class="chooser-btn" onclick="chooseSubject('Mix')">
             <div class="chooser-icon">🎲</div>
             <div class="chooser-label">Pick &amp; Mix</div>
@@ -716,7 +721,7 @@
 </div>
 
 <script>
-var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQK6MAmGK0DL-TrVVWwnhf9Yrcmc7vTp_20Q13VMBVLZtzYFLZ5FNbR8QGiLzeMlEXKEAEhDo8DQz9N/pub?output=csv';
+var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRTK9ObW_9C797mOagnxHKDLm_LOGkqVpoQ_LlgJOMOeJi1Rwx_hfqUQd_pA2TsYaac8LCKormzfTTi/pub?output=csv';
 
 // SET THESE AFTER GOOGLE APPS SCRIPT SETUP:
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzmfpJhzfvHQPWluxaXaWX8vhcnqwoSMpDEExAdWg87edhvxkBirTQSuQ97-Dnj05/exec';
@@ -793,6 +798,12 @@ var GREETINGS_MUSIC = [
   'Let\'s make some noise!',
   'Time for music, Alannah!',
   'Feel the rhythm!',
+];
+var GREETINGS_11PLUS = [
+  'Time for 11+ prep, Alannah!',
+  'Let\'s sharpen those skills!',
+  'You\'ve got this, Alannah!',
+  'Ready for a challenge?',
 ];
 var GREETINGS_MIX = [
   'You\'ve got this, Alannah!',
@@ -1017,6 +1028,8 @@ function showChooser() {
   document.getElementById('chooser-french-count').textContent = frenchCount > 0 ? frenchCount + ' questions' : 'Coming soon!';
   var musicCount = allQuestions.filter(function(q) { return q.subject === 'Music'; }).length;
   document.getElementById('chooser-music-count').textContent = musicCount > 0 ? musicCount + ' questions' : 'Coming soon!';
+  var elevenCount = allQuestions.filter(function(q) { return q.subject === '11+'; }).length;
+  document.getElementById('chooser-11plus-count').textContent = elevenCount > 0 ? elevenCount + ' questions' : 'Coming soon!';
   document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
@@ -1025,7 +1038,7 @@ function showChooser() {
 
 function chooseSubject(subj) {
   chosenSubject = subj;
-  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
   var pool = subj === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === subj; });
   if (pool.length === 0) {
     document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';
@@ -1189,7 +1202,8 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    sessionQueue = shuffle(pool.slice()).slice(0, 20);
+    var batchSize = chosenSubject === '11+' ? 10 : 20;
+    sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 
   sessionIndex = 0;

@@ -657,7 +657,7 @@ var errorList = [];
 var mode = 'practice';
 var answered = false;
 var sessionSaved = false;
-var history = [];
+var practiceHistory = [];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -665,26 +665,26 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function loadHistory() {
   try {
     var data = localStorage.getItem('alannah-history');
-    if (data) history = JSON.parse(data);
+    if (data) practiceHistory = JSON.parse(data);
   } catch(e) {}
   updateAlltimeStats();
 }
 
 function saveHistory() {
   try {
-    localStorage.setItem('alannah-history', JSON.stringify(history));
+    localStorage.setItem('alannah-history', JSON.stringify(practiceHistory));
   } catch(e) {}
 }
 
 function updateAlltimeStats() {
-  var totalSessions = history.length;
+  var totalSessions = practiceHistory.length;
   var totalBadges = 0;
   var totalQuestions = 0;
   var bestScore = 0;
-  for (var i = 0; i < history.length; i++) {
-    totalBadges += (history[i].badges || 0);
-    totalQuestions += (history[i].correct || 0) + (history[i].wrong || 0);
-    if (history[i].score > bestScore) bestScore = history[i].score;
+  for (var i = 0; i < practiceHistory.length; i++) {
+    totalBadges += (practiceHistory[i].badges || 0);
+    totalQuestions += (practiceHistory[i].correct || 0) + (practiceHistory[i].wrong || 0);
+    if (practiceHistory[i].score > bestScore) bestScore = practiceHistory[i].score;
   }
   document.getElementById('alltime-sessions').textContent = totalSessions;
   document.getElementById('alltime-badges').textContent = totalBadges;
@@ -723,7 +723,7 @@ function saveSession() {
     questions: total
   };
 
-  history.push(record);
+  practiceHistory.push(record);
   saveHistory();
   saveToSheet(record);
   updateAlltimeStats();
@@ -746,9 +746,9 @@ async function fetchRemoteHistory() {
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
       if (!row[0]) continue;
-      var exists = history.some(function(h) { return h.date === row[0] && h.time === row[1]; });
+      var exists = practiceHistory.some(function(h) { return h.date === row[0] && h.time === row[1]; });
       if (!exists) {
-        history.push({
+        practiceHistory.push({
           date: row[0], time: row[1], mode: row[2],
           correct: parseInt(row[3]) || 0, wrong: parseInt(row[4]) || 0,
           score: parseInt(row[5]) || 0, badges: parseInt(row[6]) || 0,
@@ -766,7 +766,7 @@ function renderHistory() {
   var container = document.getElementById('history-content');
   var banner = document.getElementById('history-best-banner');
 
-  if (history.length === 0) {
+  if (practiceHistory.length === 0) {
     banner.style.display = 'none';
     container.innerHTML = '<div class="history-empty">No sessions saved yet, Alannah!<br>Complete a session and press Save Practice.</div>';
     return;
@@ -775,16 +775,16 @@ function renderHistory() {
   var totalBadges = 0;
   var bestScore = 0;
   var totalCorrect = 0;
-  for (var i = 0; i < history.length; i++) {
-    totalBadges += (history[i].badges || 0);
-    totalCorrect += (history[i].correct || 0);
-    if (history[i].score > bestScore) bestScore = history[i].score;
+  for (var i = 0; i < practiceHistory.length; i++) {
+    totalBadges += (practiceHistory[i].badges || 0);
+    totalCorrect += (practiceHistory[i].correct || 0);
+    if (practiceHistory[i].score > bestScore) bestScore = practiceHistory[i].score;
   }
 
   banner.style.display = 'block';
   banner.textContent = '🏆 Best: ' + bestScore + '% · ' + totalBadges + ' total badges · ' + totalCorrect + ' questions nailed';
 
-  var sorted = history.slice().reverse();
+  var sorted = practiceHistory.slice().reverse();
   var html = '<table class="history-table"><thead><tr><th>Date</th><th>Time</th><th>Mode</th><th>Score</th><th>Correct</th><th>Badges</th></tr></thead><tbody>';
   var limit = Math.min(sorted.length, 20);
   for (var j = 0; j < limit; j++) {

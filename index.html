@@ -800,6 +800,7 @@ function renderHistory() {
 
 // ── CSV parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   var rows = [];
   var i = 0;
   while (i < text.length) {
@@ -813,12 +814,12 @@ function parseCSV(text) {
           else if (text[i] === '"') { i++; break; }
           else { cell += text[i++]; }
         }
-        row.push(cell);
+        row.push(cell.trim());
         if (text[i] === ',') i++;
       } else {
         var cell2 = '';
         while (i < text.length && text[i] !== ',' && text[i] !== '\n') cell2 += text[i++];
-        row.push(cell2);
+        row.push(cell2.trim());
         if (text[i] === ',') i++;
       }
     }

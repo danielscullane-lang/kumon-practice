@@ -986,7 +986,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    sessionQueue = shuffle(pool.slice());
+    sessionQueue = shuffle(pool.slice()).slice(0, 20);
   }
 
   sessionIndex = 0;

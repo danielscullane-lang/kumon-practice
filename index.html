@@ -1165,6 +1165,13 @@ function showSummary() {
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && answered) {
+    e.preventDefault();
+    nextQuestion();
+  }
+});
+
 loadHistory();
 fetchRemoteHistory();
 loadData();

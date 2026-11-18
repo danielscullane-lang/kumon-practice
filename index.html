@@ -372,6 +372,166 @@
     letter-spacing: 6px;
   }
 
+  /* Results dashboard */
+  .results-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .results-link:hover { color: var(--primary-dark); }
+  .results-dashboard {
+    display: none;
+  }
+  .results-dashboard.active { display: block; }
+  .results-overview {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .results-stat {
+    text-align: center;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+    min-width: 100px;
+    flex: 1;
+    max-width: 150px;
+  }
+  .results-stat-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .results-stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 4px;
+  }
+  .results-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .results-section h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .subject-bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .subject-bar-label {
+    width: 90px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .subject-bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--primary-light);
+    border-radius: 11px;
+    overflow: hidden;
+    position: relative;
+  }
+  .subject-bar-fill {
+    height: 100%;
+    border-radius: 11px;
+    transition: width 0.6s ease;
+    min-width: 2px;
+  }
+  .subject-bar-pct {
+    width: 44px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .trend-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 80px;
+    margin-bottom: 8px;
+  }
+  .trend-bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    position: relative;
+    transition: height 0.4s ease;
+  }
+  .trend-bar:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .trend-labels {
+    display: flex;
+    gap: 4px;
+  }
+  .trend-labels span {
+    flex: 1;
+    text-align: center;
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+  .recent-log {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+  }
+  .recent-log th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 6px 8px;
+    text-align: left;
+  }
+  .recent-log td {
+    padding: 8px;
+    background: var(--primary-light);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .recent-log tr td:first-child { border-radius: 8px 0 0 8px; }
+  .recent-log tr td:last-child { border-radius: 0 8px 8px 0; }
+
   /* History panel */
   .history-panel {
     display: none;
@@ -615,6 +775,26 @@
             <div class="chooser-desc" id="chooser-mix-count"></div>
           </button>
         </div>
+        <a class="results-link" onclick="showResults()">📊 My Results</a>
+      </div>
+    </div>
+
+    <!-- Results dashboard -->
+    <div id="results-dashboard" class="results-dashboard">
+      <button class="btn-back" onclick="hideResults()">&#8592; Back</button>
+      <div class="results-overview" id="results-overview"></div>
+      <div class="results-section" id="results-trend-section" style="display:none">
+        <h3>Score Trend (Last 10)</h3>
+        <div class="trend-row" id="results-trend"></div>
+        <div class="trend-labels" id="results-trend-labels"></div>
+      </div>
+      <div class="results-section" id="results-subjects-section" style="display:none">
+        <h3>Performance by Subject</h3>
+        <div id="results-subjects"></div>
+      </div>
+      <div class="results-section">
+        <h3>Recent Sessions</h3>
+        <div id="results-log"></div>
       </div>
     </div>
 
@@ -965,6 +1145,112 @@ function renderHistory() {
   container.innerHTML = html;
 }
 
+// ── Results dashboard ────────────────────────────────────────────────────────
+var SUBJECT_COLORS = {
+  'Maths': '#8b5cf6', 'English': '#3b82f6', 'Humanities': '#10b981',
+  'French': '#002395', 'Music': '#ec4899', '11+': '#f59e0b', 'Mix': '#6b7280'
+};
+
+function showResults() {
+  document.getElementById('chooser').style.display = 'none';
+  document.getElementById('results-dashboard').className = 'results-dashboard active';
+  renderResults();
+}
+
+function hideResults() {
+  document.getElementById('results-dashboard').className = 'results-dashboard';
+  showChooser();
+}
+
+function renderResults() {
+  var total = practiceHistory.length;
+  var totalCorrect = 0, totalWrong = 0, totalBadges = 0, bestScore = 0;
+  for (var i = 0; i < total; i++) {
+    totalCorrect += (practiceHistory[i].correct || 0);
+    totalWrong += (practiceHistory[i].wrong || 0);
+    totalBadges += (practiceHistory[i].badges || 0);
+    if (practiceHistory[i].score > bestScore) bestScore = practiceHistory[i].score;
+  }
+  var avgScore = total > 0 ? Math.round(totalCorrect / (totalCorrect + totalWrong) * 100) : 0;
+
+  var overview = document.getElementById('results-overview');
+  overview.innerHTML =
+    '<div class="results-stat"><div class="results-stat-num">' + total + '</div><div class="results-stat-label">Sessions</div></div>' +
+    '<div class="results-stat"><div class="results-stat-num">' + (totalCorrect + totalWrong) + '</div><div class="results-stat-label">Questions</div></div>' +
+    '<div class="results-stat"><div class="results-stat-num">' + (total > 0 ? avgScore + '%' : '-') + '</div><div class="results-stat-label">Avg Score</div></div>' +
+    '<div class="results-stat"><div class="results-stat-num">' + (total > 0 ? bestScore + '%' : '-') + '</div><div class="results-stat-label">Best</div></div>' +
+    '<div class="results-stat"><div class="results-stat-num">' + totalBadges + '</div><div class="results-stat-label">Badges</div></div>';
+
+  // Score trend (last 10)
+  var trendSection = document.getElementById('results-trend-section');
+  if (total >= 2) {
+    trendSection.style.display = '';
+    var last10 = practiceHistory.slice(-10);
+    var trendHtml = '';
+    var labelHtml = '';
+    for (var t = 0; t < last10.length; t++) {
+      var pct = last10[t].score || 0;
+      var color = pct >= 80 ? 'var(--success)' : pct >= 50 ? 'var(--primary)' : 'var(--danger)';
+      var subj = (last10[t].mode || '').replace(/.*\(/, '').replace(/\).*/, '');
+      trendHtml += '<div class="trend-bar" style="height:' + Math.max(pct, 5) + '%;background:' + color + '" data-tip="' + pct + '% — ' + subj + '"></div>';
+      labelHtml += '<span>' + (last10[t].date || '').substring(5) + '</span>';
+    }
+    document.getElementById('results-trend').innerHTML = trendHtml;
+    document.getElementById('results-trend-labels').innerHTML = labelHtml;
+  } else {
+    trendSection.style.display = 'none';
+  }
+
+  // Per-subject breakdown
+  var subjectsSection = document.getElementById('results-subjects-section');
+  var subjectMap = {};
+  for (var s = 0; s < total; s++) {
+    var subj = (practiceHistory[s].mode || '').replace(/.*\(/, '').replace(/\).*/, '');
+    if (!subj) continue;
+    if (!subjectMap[subj]) subjectMap[subj] = { correct: 0, wrong: 0, sessions: 0 };
+    subjectMap[subj].correct += (practiceHistory[s].correct || 0);
+    subjectMap[subj].wrong += (practiceHistory[s].wrong || 0);
+    subjectMap[subj].sessions++;
+  }
+  var subjectKeys = Object.keys(subjectMap);
+  if (subjectKeys.length > 0) {
+    subjectsSection.style.display = '';
+    var barsHtml = '';
+    subjectKeys.sort();
+    for (var k = 0; k < subjectKeys.length; k++) {
+      var sk = subjectKeys[k];
+      var sd = subjectMap[sk];
+      var spct = sd.correct + sd.wrong > 0 ? Math.round(sd.correct / (sd.correct + sd.wrong) * 100) : 0;
+      var barColor = SUBJECT_COLORS[sk] || 'var(--primary)';
+      barsHtml += '<div class="subject-bar-row">' +
+        '<div class="subject-bar-label">' + sk + '</div>' +
+        '<div class="subject-bar-track"><div class="subject-bar-fill" style="width:' + spct + '%;background:' + barColor + '"></div></div>' +
+        '<div class="subject-bar-pct">' + spct + '%</div>' +
+        '</div>';
+    }
+    document.getElementById('results-subjects').innerHTML = barsHtml;
+  } else {
+    subjectsSection.style.display = 'none';
+  }
+
+  // Recent log (last 10)
+  var logContainer = document.getElementById('results-log');
+  if (total === 0) {
+    logContainer.innerHTML = '<div class="history-empty">No sessions yet — go practise!</div>';
+  } else {
+    var recent = practiceHistory.slice().reverse().slice(0, 10);
+    var logHtml = '<table class="recent-log"><thead><tr><th>Date</th><th>Subject</th><th>Score</th><th>Correct</th></tr></thead><tbody>';
+    for (var r = 0; r < recent.length; r++) {
+      var rec = recent[r];
+      var rSubj = (rec.mode || '').replace(/.*\(/, '').replace(/\).*/, '');
+      var rTotal = (rec.correct || 0) + (rec.wrong || 0);
+      logHtml += '<tr><td>' + (rec.date || '') + '</td><td>' + rSubj + '</td><td><strong>' + (rec.score || 0) + '%</strong></td><td>' + (rec.correct || 0) + '/' + rTotal + '</td></tr>';
+    }
+    logHtml += '</tbody></table>';
+    logContainer.innerHTML = logHtml;
+  }
+}
+
 // ── CSV parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
   text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -1034,6 +1320,7 @@ function showChooser() {
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
   document.getElementById('main').style.display = 'none';
+  document.getElementById('results-dashboard').className = 'results-dashboard';
 }
 
 function chooseSubject(subj) {

@@ -293,6 +293,51 @@
   .answer-input.correct { border-color: var(--success); background: var(--success-bg); }
   .answer-input.incorrect { border-color: var(--danger); background: var(--danger-bg); }
 
+  .mcq-options {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto 16px;
+  }
+  .mcq-options.active { display: flex; }
+  .mcq-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid #e2e0f0;
+    border-radius: 14px;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  }
+  .mcq-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+  .mcq-btn.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 600; }
+  .mcq-btn.correct-choice { border-color: var(--success); background: var(--success-bg); }
+  .mcq-btn.wrong-choice { border-color: var(--danger); background: var(--danger-bg); }
+  .mcq-btn[disabled] { cursor: default; opacity: 0.85; transform: none; }
+  .mcq-btn[disabled]:hover { transform: none; }
+  .mcq-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .mcq-btn.correct-choice .mcq-letter { background: var(--success); color: white; }
+  .mcq-btn.wrong-choice .mcq-letter { background: var(--danger); color: white; }
+
   .btn-row {
     display: flex;
     gap: 10px;
@@ -871,6 +916,7 @@
             <span class="question-num" id="tag-ref"></span>
           </div>
           <div class="question-text" id="question-text">Pick your filters and press Let's Go!</div>
+          <div class="mcq-options" id="mcq-options"></div>
           <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
                  onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           <div class="btn-row">
@@ -1503,7 +1549,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    var batchSize = (chosenSubject === '11+' || chosenSubject === 'Decisions') ? 10 : 20;
+    var batchSize = chosenSubject === 'Decisions' ? 5 : chosenSubject === '11+' ? 10 : 20;
     sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 
@@ -1527,6 +1573,36 @@ function tryStackedSum(text) {
   return { top: top, bot: bot, op: op };
 }
 
+function parseMCQ(text) {
+  var m = text.match(/^([\s\S]+?)\s*(A\)[\s\S]+)$/);
+  if (!m) return null;
+  var stem = m[1].replace(/\s+/g, ' ').trim();
+  var rest = m[2];
+  var opts = [];
+  var parts = rest.split(/\s*([A-D])\)\s*/);
+  for (var i = 1; i < parts.length; i += 2) {
+    var letter = parts[i];
+    var txt = (parts[i + 1] || '').replace(/,\s*$/, '').replace(/\s+/g, ' ').trim();
+    if (txt) opts.push({ letter: letter, text: txt });
+  }
+  return opts.length >= 2 ? { stem: stem, opts: opts } : null;
+}
+
+function pickMCQ(letter) {
+  if (answered) return;
+  var btns = document.querySelectorAll('.mcq-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].setAttribute('disabled', '');
+  document.getElementById('answer-input').value = letter;
+  checkAnswer();
+  var q = sessionQueue[sessionIndex > 0 ? sessionIndex - 1 : 0];
+  var correctLetter = q.answer.trim().toUpperCase();
+  for (var j = 0; j < btns.length; j++) {
+    var bl = btns[j].getAttribute('data-letter');
+    if (bl === correctLetter) btns[j].className = 'mcq-btn correct-choice';
+    else if (bl === letter && letter !== correctLetter) btns[j].className = 'mcq-btn wrong-choice';
+  }
+}
+
 function showQuestion() {
   if (sessionIndex >= sessionQueue.length) { showSummary(); return; }
   var q = sessionQueue[sessionIndex];
@@ -1539,26 +1615,56 @@ function showQuestion() {
     (q.notes && q.notes.indexOf('★') !== -1) ? 'inline-block' : 'none';
 
   var qEl = document.getElementById('question-text');
-  var stacked = tryStackedSum(q.question);
-  if (stacked) {
-    var unitsHint = needsUnits(q.answer) ? '<div style="font-size:0.85rem;color:var(--muted);font-family:inherit;margin-top:8px">(State the units.)</div>' : '';
-    qEl.innerHTML = '<div class="stacked-sum"><span class="top-num">' + stacked.top + '</span><span class="bot-row">' + stacked.op + ' ' + stacked.bot + '</span><span class="sum-line">&nbsp;</span></div>' + unitsHint;
+  var mcqEl = document.getElementById('mcq-options');
+  var mcqParsed = parseMCQ(q.question);
+
+  if (mcqParsed) {
+    qEl.textContent = mcqParsed.stem;
+    mcqEl.innerHTML = '';
+    mcqEl.className = 'mcq-options active';
+    for (var mi = 0; mi < mcqParsed.opts.length; mi++) {
+      var btn = document.createElement('button');
+      btn.className = 'mcq-btn';
+      btn.type = 'button';
+      btn.setAttribute('data-letter', mcqParsed.opts[mi].letter);
+      btn.innerHTML = '<span class="mcq-letter">' + mcqParsed.opts[mi].letter + '</span><span>' + mcqParsed.opts[mi].text + '</span>';
+      btn.onclick = (function(letter) { return function() { pickMCQ(letter); }; })(mcqParsed.opts[mi].letter);
+      mcqEl.appendChild(btn);
+    }
   } else {
-    var qText = q.question;
-    if (needsUnits(q.answer)) qText += ' (State the units.)';
-    qEl.textContent = qText;
+    mcqEl.className = 'mcq-options';
+    mcqEl.innerHTML = '';
+    var stacked = tryStackedSum(q.question);
+    if (stacked) {
+      var unitsHint = needsUnits(q.answer) ? '<div style="font-size:0.85rem;color:var(--muted);font-family:inherit;margin-top:8px">(State the units.)</div>' : '';
+      qEl.innerHTML = '<div class="stacked-sum"><span class="top-num">' + stacked.top + '</span><span class="bot-row">' + stacked.op + ' ' + stacked.bot + '</span><span class="sum-line">&nbsp;</span></div>' + unitsHint;
+    } else {
+      var qText = q.question;
+      if (needsUnits(q.answer)) qText += ' (State the units.)';
+      qEl.textContent = qText;
+    }
   }
 
   var inp = document.getElementById('answer-input');
   inp.value = '';
   inp.className = 'answer-input';
   inp.disabled = false;
-  inp.focus();
+  if (mcqParsed) {
+    inp.style.display = 'none';
+  } else {
+    inp.style.display = '';
+    inp.focus();
+  }
 
   document.getElementById('feedback').style.display = 'none';
   document.getElementById('btn-next').style.display = 'none';
-  document.querySelector('.btn-check').style.display = 'inline-block';
-  document.querySelector('.btn-skip').style.display = 'inline-block';
+  if (mcqParsed) {
+    document.querySelector('.btn-check').style.display = 'none';
+    document.querySelector('.btn-skip').style.display = 'none';
+  } else {
+    document.querySelector('.btn-check').style.display = 'inline-block';
+    document.querySelector('.btn-skip').style.display = 'inline-block';
+  }
 
   updateStats();
 }

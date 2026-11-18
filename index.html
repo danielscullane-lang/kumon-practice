@@ -489,12 +489,69 @@
     margin-bottom: 12px;
   }
 
+  /* Subject chooser */
+  .chooser {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .chooser-title {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+  .chooser-grid {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .chooser-btn {
+    flex: 1;
+    min-width: 180px;
+    max-width: 220px;
+    padding: 28px 20px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+  .chooser-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+  }
+  .chooser-btn .chooser-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .chooser-btn .chooser-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .chooser-btn .chooser-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .btn-back:hover { color: var(--primary); }
+
   @media (max-width: 480px) {
     .container { max-width: 100%; }
     .question-text { font-size: 1.15rem; }
     .stat-num { font-size: 1.2rem; }
     .badge { width: 44px; height: 44px; font-size: 1.3rem; }
     header h1 { font-size: 1.5rem; }
+    .chooser-btn { min-width: 140px; padding: 20px 16px; }
   }
 </style>
 </head>
@@ -512,7 +569,32 @@
       <p>Fetching question bank...</p>
     </div>
 
+    <!-- Subject chooser -->
+    <div id="chooser" style="display:none">
+      <div class="chooser">
+        <p class="chooser-title">What would you like to practise today?</p>
+        <div class="chooser-grid">
+          <button class="chooser-btn" onclick="chooseSubject('Maths')">
+            <div class="chooser-icon">🔢</div>
+            <div class="chooser-label">Maths</div>
+            <div class="chooser-desc" id="chooser-maths-count"></div>
+          </button>
+          <button class="chooser-btn" onclick="chooseSubject('English')">
+            <div class="chooser-icon">📖</div>
+            <div class="chooser-label">English</div>
+            <div class="chooser-desc" id="chooser-english-count"></div>
+          </button>
+          <button class="chooser-btn" onclick="chooseSubject('Mix')">
+            <div class="chooser-icon">🎲</div>
+            <div class="chooser-label">Pick &amp; Mix</div>
+            <div class="chooser-desc" id="chooser-mix-count"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="main" style="display:none">
+      <button class="btn-back" onclick="backToChooser()">&#8592; Change subject</button>
       <!-- All-time stats -->
       <div class="alltime" id="alltime">
         <div class="alltime-item"><div class="alltime-num" id="alltime-sessions">0</div>Sessions</div>
@@ -641,7 +723,7 @@ var PRAISE = [
   'Alannah, you legend!',
   'Perfect!',
   'Boom! Correct!',
-  'Maths queen!',
+  'Superstar queen!',
   'Unstoppable!',
 ];
 
@@ -662,10 +744,22 @@ var ENCOURAGE = [
   'Keep at it, Alannah!',
 ];
 
-var GREETINGS = [
+var GREETINGS_MATHS = [
   'You\'ve got this, Alannah!',
   'Ready to be brilliant, Alannah?',
   'Let\'s do some maths magic!',
+  'Time to shine, Alannah!',
+];
+var GREETINGS_ENGLISH = [
+  'You\'ve got this, Alannah!',
+  'Ready to be brilliant, Alannah?',
+  'Let\'s work some word magic!',
+  'Time to shine, Alannah!',
+];
+var GREETINGS_MIX = [
+  'You\'ve got this, Alannah!',
+  'Ready for a bit of everything?',
+  'Pick & Mix time — let\'s go!',
   'Time to shine, Alannah!',
 ];
 
@@ -681,6 +775,7 @@ var mode = 'practice';
 var answered = false;
 var sessionSaved = false;
 var practiceHistory = [];
+var chosenSubject = '';
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -738,7 +833,7 @@ function saveSession() {
   var record = {
     date: now.toISOString().split('T')[0],
     time: now.toTimeString().split(' ')[0].substring(0, 5),
-    mode: mode,
+    mode: mode + ' (' + chosenSubject + ')',
     correct: correct,
     wrong: wrong,
     score: pct,
@@ -863,10 +958,8 @@ async function loadData() {
     }).filter(function(q) { return q.question && q.answer; });
 
     populateFilters();
-    document.getElementById('greeting').textContent = pick(GREETINGS) + ' ' + allQuestions.length + ' questions ready.';
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('main').style.display = 'block';
-    startSession();
+    showChooser();
   } catch (e) {
     document.getElementById('loading').innerHTML =
       '<p style="color:var(--danger)">Could not load questions.<br><small>' + e.message + '</small></p>' +
@@ -875,11 +968,42 @@ async function loadData() {
   }
 }
 
+function showChooser() {
+  var mathsCount = allQuestions.filter(function(q) { return q.subject === 'Maths'; }).length;
+  var englishCount = allQuestions.filter(function(q) { return q.subject === 'English'; }).length;
+  document.getElementById('chooser-maths-count').textContent = mathsCount + ' questions';
+  document.getElementById('chooser-english-count').textContent = englishCount > 0 ? englishCount + ' questions' : 'Coming soon!';
+  document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
+  document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
+  document.getElementById('chooser').style.display = 'block';
+  document.getElementById('main').style.display = 'none';
+}
+
+function chooseSubject(subj) {
+  chosenSubject = subj;
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var pool = subj === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === subj; });
+  if (pool.length === 0) {
+    document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';
+    return;
+  }
+  document.getElementById('greeting').textContent = pick(greetings) + ' ' + pool.length + ' questions ready.';
+  document.getElementById('chooser').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+  populateFilters();
+  startSession();
+}
+
+function backToChooser() {
+  showChooser();
+}
+
 function populateFilters() {
   var ages = []; var topics = []; var papers = [];
   var ageSet = {}; var topicSet = {}; var paperSet = {};
-  for (var i = 0; i < allQuestions.length; i++) {
-    var q = allQuestions[i];
+  var pool = chosenSubject === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === chosenSubject; });
+  for (var i = 0; i < pool.length; i++) {
+    var q = pool[i];
     if (!ageSet[q.age]) { ageSet[q.age] = true; ages.push(q.age); }
     if (!topicSet[q.topic]) { topicSet[q.topic] = true; topics.push(q.topic); }
     var pk = 'Paper ' + q.paper;
@@ -887,9 +1011,20 @@ function populateFilters() {
   }
   ages.sort(); topics.sort();
   papers.sort(function(a,b) { return parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]); });
+  clearSelect('filter-age', 'All Ages');
+  clearSelect('filter-topic', 'All Topics');
+  clearSelect('filter-paper', 'All Papers');
   fill('filter-age', ages.map(function(v) { return [v, v]; }));
   fill('filter-topic', topics.map(function(v) { return [v, v]; }));
   fill('filter-paper', papers.map(function(v) { return [v, v.split(' ')[1]]; }));
+}
+
+function clearSelect(id, defaultLabel) {
+  var sel = document.getElementById(id);
+  sel.innerHTML = '';
+  var opt = document.createElement('option');
+  opt.value = ''; opt.textContent = defaultLabel;
+  sel.appendChild(opt);
 }
 
 function fill(id, pairs) {
@@ -906,6 +1041,7 @@ function getFiltered() {
   var topic = document.getElementById('filter-topic').value;
   var paper = document.getElementById('filter-paper').value;
   return allQuestions.filter(function(q) {
+    if (chosenSubject !== 'Mix' && q.subject !== chosenSubject) return false;
     return (!age || q.age === age) && (!topic || q.topic === topic) && (!paper || q.paper === paper);
   });
 }
@@ -1196,7 +1332,8 @@ function showSummary() {
   document.getElementById('summary-badges').textContent = badgeStr || '';
 
   var msg = '';
-  if (pct === 100) msg = 'PERFECT SCORE! Alannah Niamh Sophia Scullane, you are a maths superstar!';
+  var subjectWord = chosenSubject === 'English' ? 'an English' : chosenSubject === 'Mix' ? 'a' : 'a maths';
+  if (pct === 100) msg = 'PERFECT SCORE! Alannah Niamh Sophia Scullane, you are ' + subjectWord + ' superstar!';
   else if (pct >= 80) msg = 'Brilliant work, Alannah! You\'re so close to perfection!';
   else if (pct >= 60) msg = 'Great effort, Alannah! Keep practising and you\'ll smash it!';
   else msg = 'Good try, Alannah! Every session makes you stronger!';

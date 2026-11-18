@@ -63,6 +63,29 @@
     margin-top: 6px;
   }
 
+  /* All-time stats */
+  .alltime {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .alltime-item {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .alltime-num {
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   /* Badge shelf */
   .badge-shelf {
     display: flex;
@@ -93,9 +116,7 @@
     box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
     animation: badgePop 0.5s ease;
   }
-  .badge .badge-label {
-    display: none;
-  }
+  .badge .badge-label { display: none; }
   @keyframes badgePop {
     0% { transform: scale(1); }
     40% { transform: scale(1.3) rotate(10deg); }
@@ -274,6 +295,15 @@
   .btn-skip:hover { background: #ddd6fe; }
   .btn-next { background: linear-gradient(135deg, var(--success), #059669); color: white; display: none; }
   .btn-next:hover { transform: translateY(-1px); }
+  .btn-save {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    max-width: 220px;
+    margin: 0 auto 10px;
+    display: block;
+  }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+  .btn-save:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
 
   /* Feedback */
   .feedback {
@@ -312,6 +342,50 @@
     font-size: 2rem;
     margin: 16px 0 24px;
     letter-spacing: 6px;
+  }
+
+  /* History panel */
+  .history-panel {
+    display: none;
+  }
+  .history-panel.active { display: block; }
+  .history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+  }
+  .history-table th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  .history-table td {
+    padding: 10px;
+    background: var(--primary-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .history-table tr td:first-child { border-radius: 10px 0 0 10px; }
+  .history-table tr td:last-child { border-radius: 0 10px 10px 0; }
+  .history-empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .history-best {
+    text-align: center;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: var(--radius);
+    font-weight: 700;
+    color: #92400e;
+    font-size: 1.1rem;
   }
 
   /* Loading */
@@ -385,6 +459,13 @@
     100% { transform: translate(-50%, -50%) scale(1); }
   }
 
+  /* Save status */
+  .save-status {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
   @media (max-width: 480px) {
     .container { max-width: 100%; }
     .question-text { font-size: 1.15rem; }
@@ -409,6 +490,14 @@
     </div>
 
     <div id="main" style="display:none">
+      <!-- All-time stats -->
+      <div class="alltime" id="alltime">
+        <div class="alltime-item"><div class="alltime-num" id="alltime-sessions">0</div>Sessions</div>
+        <div class="alltime-item"><div class="alltime-num" id="alltime-badges">0</div>Badges</div>
+        <div class="alltime-item"><div class="alltime-num" id="alltime-best">-</div>Best Score</div>
+        <div class="alltime-item"><div class="alltime-num" id="alltime-questions">0</div>Questions</div>
+      </div>
+
       <!-- Badge shelf -->
       <div class="badge-shelf" id="badge-shelf">
         <div class="badge" id="badge-0">?</div>
@@ -426,71 +515,89 @@
         <button class="nav-btn active" onclick="setMode('practice')" id="nav-practice">Practice</button>
         <button class="nav-btn" onclick="setMode('test')" id="nav-test">Test Mode</button>
         <button class="nav-btn" onclick="setMode('review')" id="nav-review">Review Errors</button>
+        <button class="nav-btn" onclick="setMode('history')" id="nav-history">History</button>
       </div>
 
-      <!-- Filters -->
-      <div class="filters">
-        <select id="filter-age" onchange="applyFilters()">
-          <option value="">All Ages</option>
-        </select>
-        <select id="filter-topic" onchange="applyFilters()">
-          <option value="">All Topics</option>
-        </select>
-        <select id="filter-paper" onchange="applyFilters()">
-          <option value="">All Papers</option>
-        </select>
-        <button onclick="startSession()">Let's Go!</button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats">
-        <div class="stat"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Left</div></div>
-        <div class="stat"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-label">Correct</div></div>
-        <div class="stat"><div class="stat-num" id="stat-wrong" style="color:var(--danger)">0</div><div class="stat-label">Wrong</div></div>
-        <div class="stat"><div class="stat-num" id="stat-score">-</div><div class="stat-label">Score</div></div>
-      </div>
-
-      <!-- Progress -->
-      <div class="progress-wrap">
-        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
-      </div>
-
-      <!-- Question card -->
-      <div class="card" id="question-card">
-        <div class="card-meta">
-          <span class="tag" id="tag-age"></span>
-          <span class="tag" id="tag-topic"></span>
-          <span class="tag stretch" id="tag-stretch" style="display:none">Stretch</span>
-          <span class="question-num" id="tag-ref"></span>
+      <!-- Practice panels (question card, filters, stats) -->
+      <div id="practice-panel">
+        <!-- Filters -->
+        <div class="filters">
+          <select id="filter-age" onchange="applyFilters()">
+            <option value="">All Ages</option>
+          </select>
+          <select id="filter-topic" onchange="applyFilters()">
+            <option value="">All Topics</option>
+          </select>
+          <select id="filter-paper" onchange="applyFilters()">
+            <option value="">All Papers</option>
+          </select>
+          <button onclick="startSession()">Let's Go!</button>
         </div>
-        <div class="question-text" id="question-text">Pick your filters and press Let's Go!</div>
-        <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
-               onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-        <div class="btn-row">
-          <button class="btn btn-check" onclick="checkAnswer()">Check</button>
-          <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
-          <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Next</button>
+
+        <!-- Stats -->
+        <div class="stats">
+          <div class="stat"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Left</div></div>
+          <div class="stat"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-label">Correct</div></div>
+          <div class="stat"><div class="stat-num" id="stat-wrong" style="color:var(--danger)">0</div><div class="stat-label">Wrong</div></div>
+          <div class="stat"><div class="stat-num" id="stat-score">-</div><div class="stat-label">Score</div></div>
         </div>
-        <div class="feedback" id="feedback"></div>
+
+        <!-- Progress -->
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+
+        <!-- Question card -->
+        <div class="card" id="question-card">
+          <div class="card-meta">
+            <span class="tag" id="tag-age"></span>
+            <span class="tag" id="tag-topic"></span>
+            <span class="tag stretch" id="tag-stretch" style="display:none">Stretch</span>
+            <span class="question-num" id="tag-ref"></span>
+          </div>
+          <div class="question-text" id="question-text">Pick your filters and press Let's Go!</div>
+          <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
+                 onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="btn-row">
+            <button class="btn btn-check" onclick="checkAnswer()">Check</button>
+            <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
+            <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Next</button>
+          </div>
+          <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card summary" id="summary">
+          <h2 id="summary-title">Session Complete!</h2>
+          <div class="score-big" id="summary-score">-</div>
+          <p id="summary-detail"></p>
+          <div class="badges-earned" id="summary-badges"></div>
+          <p id="summary-message" style="font-weight:600;color:var(--primary);margin-bottom:20px"></p>
+          <button class="btn btn-save" id="btn-save" onclick="saveSession()">Save Practice</button>
+          <p class="save-status" id="save-status"></p>
+          <button class="btn btn-check" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
+        </div>
       </div>
 
-      <!-- Summary -->
-      <div class="card summary" id="summary">
-        <h2 id="summary-title">Session Complete!</h2>
-        <div class="score-big" id="summary-score">-</div>
-        <p id="summary-detail"></p>
-        <div class="badges-earned" id="summary-badges"></div>
-        <p id="summary-message" style="font-weight:600;color:var(--primary);margin-bottom:20px"></p>
-        <button class="btn btn-check" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
+      <!-- History panel -->
+      <div class="history-panel" id="history-panel">
+        <div class="history-best" id="history-best-banner"></div>
+        <div class="card">
+          <div id="history-content"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZo_U7fRDtIzQ1Qw_jVbVDotRNjhGHXwYcuwVYFxJfctZlmBC_AX2iHPIbJCAqfEqV_d7h1DfmL2SX/pub?output=csv';
+var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZo_U7fRDtIzQ1Qw_jVbVDotRNjhGHXwYcuwVYFxJfctZlmBC_AX2iHPIbJCAqfEqV_d7h1DfmL2SX/pub?output=csv';
 
-const BADGES = [
+// SET THESE AFTER GOOGLE APPS SCRIPT SETUP:
+var SCRIPT_URL = '';   // Your deployed Apps Script web app URL
+var RESULTS_CSV_URL = ''; // Published CSV URL of the Results tab
+
+var BADGES = [
   { emoji: '⭐', name: 'Star' },
   { emoji: '🦄', name: 'Unicorn' },
   { emoji: '🍎', name: 'Apple' },
@@ -498,7 +605,7 @@ const BADGES = [
   { emoji: '🐰', name: 'Bunny' },
 ];
 
-const PRAISE = [
+var PRAISE = [
   'Brilliant, Alannah!',
   'You\'re on fire!',
   'Superstar!',
@@ -515,14 +622,14 @@ const PRAISE = [
   'Unstoppable!',
 ];
 
-const FULL_NAME_PRAISE = [
+var FULL_NAME_PRAISE = [
   'Alannah Niamh Sophia Scullane, you absolute genius!',
   'Take a bow, Alannah Niamh Sophia Scullane!',
   'Alannah Niamh Sophia Scullane strikes again!',
   'The one and only Alannah Niamh Sophia Scullane!',
 ];
 
-const ENCOURAGE = [
+var ENCOURAGE = [
   'Nearly, Alannah! You\'ll get the next one.',
   'Good try! Keep going.',
   'Don\'t worry - you\'re learning!',
@@ -532,34 +639,174 @@ const ENCOURAGE = [
   'Keep at it, Alannah!',
 ];
 
-const GREETINGS = [
+var GREETINGS = [
   'You\'ve got this, Alannah!',
   'Ready to be brilliant, Alannah?',
   'Let\'s do some maths magic!',
   'Time to shine, Alannah!',
 ];
 
-let allQuestions = [];
-let sessionQueue = [];
-let sessionIndex = 0;
-let correct = 0;
-let wrong = 0;
-let streak = 0;
-let badgesEarned = 0;
-let errorList = [];
-let mode = 'practice';
-let answered = false;
+var allQuestions = [];
+var sessionQueue = [];
+var sessionIndex = 0;
+var correct = 0;
+var wrong = 0;
+var streak = 0;
+var badgesEarned = 0;
+var errorList = [];
+var mode = 'practice';
+var answered = false;
+var sessionSaved = false;
+var history = [];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+// ── LocalStorage helpers ─────────────────────────────────────────────────────
+function loadHistory() {
+  try {
+    var data = localStorage.getItem('alannah-history');
+    if (data) history = JSON.parse(data);
+  } catch(e) {}
+  updateAlltimeStats();
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem('alannah-history', JSON.stringify(history));
+  } catch(e) {}
+}
+
+function updateAlltimeStats() {
+  var totalSessions = history.length;
+  var totalBadges = 0;
+  var totalQuestions = 0;
+  var bestScore = 0;
+  for (var i = 0; i < history.length; i++) {
+    totalBadges += (history[i].badges || 0);
+    totalQuestions += (history[i].correct || 0) + (history[i].wrong || 0);
+    if (history[i].score > bestScore) bestScore = history[i].score;
+  }
+  document.getElementById('alltime-sessions').textContent = totalSessions;
+  document.getElementById('alltime-badges').textContent = totalBadges;
+  document.getElementById('alltime-best').textContent = totalSessions > 0 ? bestScore + '%' : '-';
+  document.getElementById('alltime-questions').textContent = totalQuestions;
+}
+
+// ── Google Sheets save ───────────────────────────────────────────────────────
+function saveToSheet(record) {
+  if (!SCRIPT_URL) return;
+  try {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+  } catch(e) {}
+}
+
+function saveSession() {
+  if (sessionSaved) return;
+  sessionSaved = true;
+
+  var total = correct + wrong;
+  var pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  var now = new Date();
+  var record = {
+    date: now.toISOString().split('T')[0],
+    time: now.toTimeString().split(' ')[0].substring(0, 5),
+    mode: mode,
+    correct: correct,
+    wrong: wrong,
+    score: pct,
+    badges: badgesEarned,
+    questions: total
+  };
+
+  history.push(record);
+  saveHistory();
+  saveToSheet(record);
+  updateAlltimeStats();
+
+  var btn = document.getElementById('btn-save');
+  btn.textContent = 'Saved!';
+  btn.disabled = true;
+  document.getElementById('save-status').textContent = 'Session saved to your history.';
+}
+
+// ── Fetch remote history ─────────────────────────────────────────────────────
+async function fetchRemoteHistory() {
+  if (!RESULTS_CSV_URL) return;
+  try {
+    var res = await fetch(RESULTS_CSV_URL);
+    if (!res.ok) return;
+    var text = await res.text();
+    var rows = parseCSV(text);
+    if (rows.length < 2) return;
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      if (!row[0]) continue;
+      var exists = history.some(function(h) { return h.date === row[0] && h.time === row[1]; });
+      if (!exists) {
+        history.push({
+          date: row[0], time: row[1], mode: row[2],
+          correct: parseInt(row[3]) || 0, wrong: parseInt(row[4]) || 0,
+          score: parseInt(row[5]) || 0, badges: parseInt(row[6]) || 0,
+          questions: parseInt(row[7]) || 0
+        });
+      }
+    }
+    saveHistory();
+    updateAlltimeStats();
+  } catch(e) {}
+}
+
+// ── Render history ───────────────────────────────────────────────────────────
+function renderHistory() {
+  var container = document.getElementById('history-content');
+  var banner = document.getElementById('history-best-banner');
+
+  if (history.length === 0) {
+    banner.style.display = 'none';
+    container.innerHTML = '<div class="history-empty">No sessions saved yet, Alannah!<br>Complete a session and press Save Practice.</div>';
+    return;
+  }
+
+  var totalBadges = 0;
+  var bestScore = 0;
+  var totalCorrect = 0;
+  for (var i = 0; i < history.length; i++) {
+    totalBadges += (history[i].badges || 0);
+    totalCorrect += (history[i].correct || 0);
+    if (history[i].score > bestScore) bestScore = history[i].score;
+  }
+
+  banner.style.display = 'block';
+  banner.textContent = '🏆 Best: ' + bestScore + '% · ' + totalBadges + ' total badges · ' + totalCorrect + ' questions nailed';
+
+  var sorted = history.slice().reverse();
+  var html = '<table class="history-table"><thead><tr><th>Date</th><th>Time</th><th>Mode</th><th>Score</th><th>Correct</th><th>Badges</th></tr></thead><tbody>';
+  var limit = Math.min(sorted.length, 20);
+  for (var j = 0; j < limit; j++) {
+    var h = sorted[j];
+    var badgeIcons = '';
+    for (var b = 0; b < (h.badges || 0); b++) badgeIcons += BADGES[b].emoji;
+    html += '<tr><td>' + (h.date || '') + '</td><td>' + (h.time || '') + '</td><td>' + (h.mode || '') + '</td><td><strong>' + (h.score || 0) + '%</strong></td><td>' + (h.correct || 0) + '/' + ((h.correct || 0) + (h.wrong || 0)) + '</td><td>' + (badgeIcons || '-') + '</td></tr>';
+  }
+  html += '</tbody></table>';
+  if (sorted.length > 20) html += '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:12px">Showing last 20 sessions</p>';
+  container.innerHTML = html;
+}
+
+// ── CSV parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
-  const rows = [];
-  let i = 0;
+  var rows = [];
+  var i = 0;
   while (i < text.length) {
-    const row = [];
+    var row = [];
     while (i < text.length && text[i] !== '\n') {
       if (text[i] === '"') {
-        let cell = '';
+        var cell = '';
         i++;
         while (i < text.length) {
           if (text[i] === '"' && text[i+1] === '"') { cell += '"'; i += 2; }
@@ -569,9 +816,9 @@ function parseCSV(text) {
         row.push(cell);
         if (text[i] === ',') i++;
       } else {
-        let cell = '';
-        while (i < text.length && text[i] !== ',' && text[i] !== '\n') cell += text[i++];
-        row.push(cell);
+        var cell2 = '';
+        while (i < text.length && text[i] !== ',' && text[i] !== '\n') cell2 += text[i++];
+        row.push(cell2);
         if (text[i] === ',') i++;
       }
     }
@@ -583,14 +830,13 @@ function parseCSV(text) {
 
 async function loadData() {
   try {
-    const res = await fetch(CSV_URL);
+    var res = await fetch(CSV_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    allQuestions = rows.slice(1).map(r => ({
-      subject: r[0], age: r[1], paper: r[2], qnum: r[3],
-      topic: r[4], question: r[5], answer: r[6], marks: r[7], notes: r[8]
-    })).filter(q => q.question && q.answer);
+    var text = await res.text();
+    var rows = parseCSV(text);
+    allQuestions = rows.slice(1).map(function(r) {
+      return { subject: r[0], age: r[1], paper: r[2], qnum: r[3], topic: r[4], question: r[5], answer: r[6], marks: r[7], notes: r[8] };
+    }).filter(function(q) { return q.question && q.answer; });
 
     populateFilters();
     document.getElementById('greeting').textContent = pick(GREETINGS) + ' ' + allQuestions.length + ' questions ready.';
@@ -606,28 +852,35 @@ async function loadData() {
 }
 
 function populateFilters() {
-  const ages = [...new Set(allQuestions.map(q => q.age))].sort();
-  const topics = [...new Set(allQuestions.map(q => q.topic))].sort();
-  const papers = [...new Set(allQuestions.map(q => 'Paper ' + q.paper))].sort((a,b) =>
-    parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]));
-  fill('filter-age', ages.map(v => [v, v]));
-  fill('filter-topic', topics.map(v => [v, v]));
-  fill('filter-paper', papers.map(v => [v, v.split(' ')[1]]));
+  var ages = []; var topics = []; var papers = [];
+  var ageSet = {}; var topicSet = {}; var paperSet = {};
+  for (var i = 0; i < allQuestions.length; i++) {
+    var q = allQuestions[i];
+    if (!ageSet[q.age]) { ageSet[q.age] = true; ages.push(q.age); }
+    if (!topicSet[q.topic]) { topicSet[q.topic] = true; topics.push(q.topic); }
+    var pk = 'Paper ' + q.paper;
+    if (!paperSet[pk]) { paperSet[pk] = true; papers.push(pk); }
+  }
+  ages.sort(); topics.sort();
+  papers.sort(function(a,b) { return parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]); });
+  fill('filter-age', ages.map(function(v) { return [v, v]; }));
+  fill('filter-topic', topics.map(function(v) { return [v, v]; }));
+  fill('filter-paper', papers.map(function(v) { return [v, v.split(' ')[1]]; }));
 }
 
 function fill(id, pairs) {
-  const sel = document.getElementById(id);
-  pairs.forEach(function(p) {
-    const opt = document.createElement('option');
-    opt.value = p[1]; opt.textContent = p[0];
+  var sel = document.getElementById(id);
+  for (var i = 0; i < pairs.length; i++) {
+    var opt = document.createElement('option');
+    opt.value = pairs[i][1]; opt.textContent = pairs[i][0];
     sel.appendChild(opt);
-  });
+  }
 }
 
 function getFiltered() {
-  const age = document.getElementById('filter-age').value;
-  const topic = document.getElementById('filter-topic').value;
-  const paper = document.getElementById('filter-paper').value;
+  var age = document.getElementById('filter-age').value;
+  var topic = document.getElementById('filter-topic').value;
+  var paper = document.getElementById('filter-paper').value;
   return allQuestions.filter(function(q) {
     return (!age || q.age === age) && (!topic || q.topic === topic) && (!paper || q.paper === paper);
   });
@@ -637,24 +890,33 @@ function applyFilters() {}
 
 function setMode(m) {
   mode = m;
-  ['practice','test','review'].forEach(function(id) {
+  ['practice','test','review','history'].forEach(function(id) {
     document.getElementById('nav-' + id).className = 'nav-btn' + (id === m ? ' active' : '');
   });
-  startSession();
+
+  if (m === 'history') {
+    document.getElementById('practice-panel').style.display = 'none';
+    document.getElementById('history-panel').className = 'history-panel active';
+    renderHistory();
+  } else {
+    document.getElementById('practice-panel').style.display = 'block';
+    document.getElementById('history-panel').className = 'history-panel';
+    startSession();
+  }
 }
 
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
   }
   return arr;
 }
 
 function resetBadges() {
   badgesEarned = 0;
-  for (let i = 0; i < 5; i++) {
-    const el = document.getElementById('badge-' + i);
+  for (var i = 0; i < 5; i++) {
+    var el = document.getElementById('badge-' + i);
     el.className = 'badge';
     el.textContent = '?';
   }
@@ -662,16 +924,16 @@ function resetBadges() {
 
 function awardBadge() {
   if (badgesEarned >= 5) return;
-  const idx = badgesEarned;
+  var idx = badgesEarned;
   badgesEarned++;
-  const el = document.getElementById('badge-' + idx);
+  var el = document.getElementById('badge-' + idx);
   el.className = 'badge earned';
   el.textContent = BADGES[idx].emoji;
   showBadgePopup(BADGES[idx]);
 }
 
 function showBadgePopup(badge) {
-  const popup = document.createElement('div');
+  var popup = document.createElement('div');
   popup.className = 'badge-popup';
   popup.innerHTML = '<div class="emoji">' + badge.emoji + '</div><div class="title">Badge Earned!</div><div class="sub">You collected the ' + badge.name + '!</div>';
   document.body.appendChild(popup);
@@ -681,8 +943,8 @@ function showBadgePopup(badge) {
 
 function spawnConfetti() {
   var colors = ['#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444'];
-  for (let i = 0; i < 30; i++) {
-    const piece = document.createElement('div');
+  for (var i = 0; i < 30; i++) {
+    var piece = document.createElement('div');
     piece.className = 'confetti-piece';
     piece.style.left = Math.random() * 100 + 'vw';
     piece.style.top = '-10px';
@@ -704,9 +966,14 @@ function getBadgeThresholds(total) {
 }
 
 function startSession() {
-  correct = 0; wrong = 0; streak = 0; answered = false;
+  correct = 0; wrong = 0; streak = 0; answered = false; sessionSaved = false;
   resetBadges();
   updateStreak();
+
+  var btn = document.getElementById('btn-save');
+  btn.textContent = 'Save Practice';
+  btn.disabled = false;
+  document.getElementById('save-status').textContent = '';
 
   if (mode === 'review') {
     sessionQueue = errorList.slice();
@@ -759,13 +1026,13 @@ function showQuestion() {
 
 function normalise(s) {
   return s.toString().trim().toLowerCase()
-    .replace(/\s+/g, ‘ ‘)
-    .replace(/[‘’]/g, "’")
-    .replace(/°/g, ‘ degrees ‘)
-    .replace(/\bdeg\b/g, ‘ degrees ‘)
-    .replace(/£/g, ‘ pounds ‘)
-    .replace(/%/g, ‘ percent ‘)
-    .replace(/\s+/g, ‘ ‘)
+    .replace(/\s+/g, ' ')
+    .replace(/[‘’]/g, "'")
+    .replace(/°/g, ' degrees ')
+    .replace(/\bdeg\b/g, ' degrees ')
+    .replace(/£/g, ' pounds ')
+    .replace(/%/g, ' percent ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -773,14 +1040,14 @@ function normaliseAnswer(userAns, correctAns) {
   if (normalise(userAns) === normalise(correctAns)) return true;
   var u = normalise(userAns);
   var c = normalise(correctAns);
-  var uNum = u.replace(/[^0-9.\-\/]/g, ‘’);
-  var cNum = c.replace(/[^0-9.\-\/]/g, ‘’);
+  var uNum = u.replace(/[^0-9.\-\/]/g, '');
+  var cNum = c.replace(/[^0-9.\-\/]/g, '');
   if (uNum && uNum === cNum) {
-    var uLetters = u.replace(/[0-9.\-\/\s]/g, ‘’);
-    var cLetters = c.replace(/[0-9.\-\/\s]/g, ‘’);
+    var uLetters = u.replace(/[0-9.\-\/\s]/g, '');
+    var cLetters = c.replace(/[0-9.\-\/\s]/g, '');
     if (uLetters === cLetters) return true;
-    if (cLetters === ‘c’ && (uLetters === ‘c’ || uLetters === ‘degrees c’ || uLetters === ‘degreesc’)) return true;
-    if (cLetters === ‘f’ && (uLetters === ‘f’ || uLetters === ‘degrees f’ || uLetters === ‘degreesf’)) return true;
+    if (cLetters === 'c' && (uLetters === 'c' || uLetters === 'degreesc')) return true;
+    if (cLetters === 'f' && (uLetters === 'f' || uLetters === 'degreesf')) return true;
   }
   return false;
 }
@@ -793,7 +1060,7 @@ function needsUnits(answer) {
 function checkAnswer() {
   if (answered) { nextQuestion(); return; }
   var q = sessionQueue[sessionIndex];
-  var userAns = document.getElementById(‘answer-input’).value.trim();
+  var userAns = document.getElementById('answer-input').value.trim();
   if (!userAns) return;
 
   var correctAns = q.answer;
@@ -896,6 +1163,9 @@ function showSummary() {
   if (badgesEarned >= 3) spawnConfetti();
 }
 
+// ── Boot ─────────────────────────────────────────────────────────────────────
+loadHistory();
+fetchRemoteHistory();
 loadData();
 </script>
 </body>

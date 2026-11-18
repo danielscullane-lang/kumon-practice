@@ -589,6 +589,11 @@
             <div class="chooser-label">Humanities</div>
             <div class="chooser-desc" id="chooser-humanities-count"></div>
           </button>
+          <button class="chooser-btn" onclick="chooseSubject('French')">
+            <div class="chooser-icon">🇫🇷</div>
+            <div class="chooser-label">French</div>
+            <div class="chooser-desc" id="chooser-french-count"></div>
+          </button>
           <button class="chooser-btn" onclick="chooseSubject('Mix')">
             <div class="chooser-icon">🎲</div>
             <div class="chooser-label">Pick &amp; Mix</div>
@@ -701,7 +706,7 @@
 </div>
 
 <script>
-var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaPcXbPkBE3Bg88979hkK63xiuQcVPS0_IGiHX0AcHwNulshmdsKOIkM-5Mffd6eX2IkQjsBxXIvVm/pub?output=csv';
+var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ8wo_mp5hw0rgwg4Aqs5UiUgCr0Mb_2H5OUGb_bqU_vQc_in0XxovOeXPfPHW5CATxFjTpXGABPSj/pub?output=csv';
 
 // SET THESE AFTER GOOGLE APPS SCRIPT SETUP:
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZzmfpJhzfvHQPWluxaXaWX8vhcnqwoSMpDEExAdWg87edhvxkBirTQSuQ97-Dnj05/exec';
@@ -766,6 +771,12 @@ var GREETINGS_HUMANITIES = [
   'Ready to explore the world?',
   'Let\'s discover amazing places!',
   'Time to shine, Alannah!',
+];
+var GREETINGS_FRENCH = [
+  'Bonjour, Alannah!',
+  'Prête pour le français?',
+  'Let\'s learn some French!',
+  'Tu es fantastique, Alannah!',
 ];
 var GREETINGS_MIX = [
   'You\'ve got this, Alannah!',
@@ -986,6 +997,8 @@ function showChooser() {
   document.getElementById('chooser-english-count').textContent = englishCount > 0 ? englishCount + ' questions' : 'Coming soon!';
   var humanitiesCount = allQuestions.filter(function(q) { return q.subject === 'Humanities'; }).length;
   document.getElementById('chooser-humanities-count').textContent = humanitiesCount > 0 ? humanitiesCount + ' questions' : 'Coming soon!';
+  var frenchCount = allQuestions.filter(function(q) { return q.subject === 'French'; }).length;
+  document.getElementById('chooser-french-count').textContent = frenchCount > 0 ? frenchCount + ' questions' : 'Coming soon!';
   document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
@@ -994,7 +1007,7 @@ function showChooser() {
 
 function chooseSubject(subj) {
   chosenSubject = subj;
-  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
   var pool = subj === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === subj; });
   if (pool.length === 0) {
     document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';

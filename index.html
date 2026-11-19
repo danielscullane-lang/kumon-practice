@@ -1594,7 +1594,7 @@ function pickMCQ(letter) {
   for (var i = 0; i < btns.length; i++) btns[i].setAttribute('disabled', '');
   document.getElementById('answer-input').value = letter;
   checkAnswer();
-  var q = sessionQueue[sessionIndex > 0 ? sessionIndex - 1 : 0];
+  var q = sessionQueue[sessionIndex];
   var correctLetter = q.answer.trim().toUpperCase();
   for (var j = 0; j < btns.length; j++) {
     var bl = btns[j].getAttribute('data-letter');

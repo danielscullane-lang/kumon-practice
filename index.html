@@ -791,6 +791,24 @@
     color: var(--muted);
     margin-top: 6px;
   }
+  .rating-btn {
+    font-size: 3rem;
+    background: var(--card);
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rating-btn:hover { transform: scale(1.15); box-shadow: 0 6px 20px rgba(139,92,246,0.2); }
+  .rating-btn:active { transform: scale(0.92); transition-duration: 0.08s; }
+  .rating-btn.selected { border-color: var(--primary); background: var(--primary-light); transform: scale(1.1); box-shadow: 0 4px 16px rgba(139,92,246,0.25); }
+  .rating-btn.dimmed { opacity: 0.3; transform: scale(0.9); pointer-events: none; }
   .btn-back {
     background: none;
     border: none;
@@ -1095,9 +1113,16 @@
           <p id="summary-detail"></p>
           <div class="badges-earned" id="summary-badges"></div>
           <p id="summary-message" style="font-weight:600;color:var(--primary);margin-bottom:20px"></p>
-          <button class="btn btn-save" id="btn-save" onclick="saveSession()">Save Practice</button>
+          <div id="rating-section">
+            <p style="font-weight:600;color:var(--text);margin-bottom:12px" id="rating-prompt">How did that feel?</p>
+            <div style="display:flex;justify-content:center;gap:24px;margin-bottom:16px">
+              <button class="rating-btn" id="btn-thumbs-up" onclick="rateSession('up')">&#128077;</button>
+              <button class="rating-btn" id="btn-thumbs-down" onclick="rateSession('down')">&#128078;</button>
+            </div>
+          </div>
+          <button class="btn btn-save" id="btn-save" onclick="saveSession()" style="display:none">Save Practice</button>
           <p class="save-status" id="save-status"></p>
-          <button class="btn btn-check" id="btn-go-again" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
+          <button class="btn btn-check" id="btn-go-again" onclick="startSession()" style="max-width:220px;margin:0 auto;display:none">Go Again!</button>
         </div>
       </div>
 
@@ -1350,7 +1375,18 @@ function saveToSheet(record) {
   }
 }
 
-function saveSession() {
+var sessionRating = '';
+
+function rateSession(rating) {
+  sessionRating = rating;
+  document.getElementById('btn-thumbs-up').className = 'rating-btn' + (rating === 'up' ? ' selected' : ' dimmed');
+  document.getElementById('btn-thumbs-down').className = 'rating-btn' + (rating === 'down' ? ' selected' : ' dimmed');
+  document.getElementById('rating-prompt').textContent = rating === 'up' ? 'Brilliant! Keep it up!' : 'That\'s OK — you\'ll smash it next time!';
+  saveSession(rating);
+  document.getElementById('btn-go-again').style.display = 'block';
+}
+
+function saveSession(rating) {
   if (sessionSaved) return;
   sessionSaved = true;
 
@@ -1365,7 +1401,8 @@ function saveSession() {
     wrong: wrong,
     score: pct,
     badges: badgesEarned,
-    questions: total
+    questions: total,
+    rating: rating || ''
   };
 
   practiceHistory.push(record);
@@ -1373,10 +1410,7 @@ function saveSession() {
   saveToSheet(record);
   updateAlltimeStats();
 
-  var btn = document.getElementById('btn-save');
-  btn.textContent = 'Saved!';
-  btn.disabled = true;
-  document.getElementById('save-status').textContent = 'Session saved to your history.';
+  document.getElementById('save-status').textContent = 'Session saved!';
 }
 
 // ── Fetch remote history ─────────────────────────────────────────────────────
@@ -2097,12 +2131,27 @@ function showSummary() {
 
   if (mode !== 'practice' && badgesEarned >= 3) spawnConfetti();
 
+  // Reset rating UI
+  sessionRating = '';
+  document.getElementById('btn-thumbs-up').className = 'rating-btn';
+  document.getElementById('btn-thumbs-down').className = 'rating-btn';
+  document.getElementById('rating-prompt').textContent = 'How did that feel?';
+  document.getElementById('save-status').textContent = '';
+
   if (mode === 'practice') {
     practiceUsed[chosenSubject] = true;
     document.getElementById('summary-message').textContent = pick(PRACTICE_NUDGE);
+    document.getElementById('rating-section').style.display = 'none';
+    document.getElementById('btn-save').style.display = '';
+    document.getElementById('btn-save').textContent = 'Save Practice';
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('btn-go-again').style.display = 'block';
     document.getElementById('btn-go-again').textContent = 'Start Test Mode!';
     document.getElementById('btn-go-again').onclick = function() { setMode('test'); };
   } else {
+    document.getElementById('rating-section').style.display = '';
+    document.getElementById('btn-save').style.display = 'none';
+    document.getElementById('btn-go-again').style.display = 'none';
     document.getElementById('btn-go-again').textContent = 'Go Again!';
     document.getElementById('btn-go-again').onclick = function() { startSession(); };
   }

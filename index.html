@@ -1097,7 +1097,7 @@
           <p id="summary-message" style="font-weight:600;color:var(--primary);margin-bottom:20px"></p>
           <button class="btn btn-save" id="btn-save" onclick="saveSession()">Save Practice</button>
           <p class="save-status" id="save-status"></p>
-          <button class="btn btn-check" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
+          <button class="btn btn-check" id="btn-go-again" onclick="startSession()" style="max-width:220px;margin:0 auto;display:block">Go Again!</button>
         </div>
       </div>
 
@@ -1252,6 +1252,14 @@ var answered = false;
 var sessionSaved = false;
 var practiceHistory = [];
 var chosenSubject = '';
+var practiceUsed = {};
+var PRACTICE_NUDGE = [
+  'That\'s enough practice — time for the real thing! You\'ve got this!',
+  'Practice done! Now show what you can do! I can do it, you can too!',
+  'You\'re all warmed up! Let\'s do it for real now!',
+  'Ready, steady, GO! Time to shine, Alannah!',
+  'Practice makes perfect — and you\'ve practised! Now let\'s see those skills!'
+];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -1630,6 +1638,17 @@ function chooseSubject(subj) {
   document.getElementById('greeting').textContent = pick(greetings) + ' ' + pool.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'none';
   document.getElementById('main').style.display = 'block';
+  if (practiceUsed[subj]) {
+    mode = 'test';
+    document.getElementById('nav-practice').className = 'nav-btn';
+    document.getElementById('nav-test').className = 'nav-btn active';
+    document.getElementById('greeting').textContent = pick(PRACTICE_NUDGE);
+  } else {
+    mode = 'practice';
+    document.getElementById('nav-practice').className = 'nav-btn active';
+    document.getElementById('nav-test').className = 'nav-btn';
+  }
+  document.getElementById('badge-shelf').style.display = mode === 'practice' ? 'none' : '';
   populateFilters();
   startSession();
 }
@@ -1690,10 +1709,15 @@ function getFiltered() {
 function applyFilters() {}
 
 function setMode(m) {
+  if (m === 'practice' && practiceUsed[chosenSubject]) {
+    m = 'test';
+    document.getElementById('greeting').textContent = pick(PRACTICE_NUDGE);
+  }
   mode = m;
   ['practice','test','review','history'].forEach(function(id) {
     document.getElementById('nav-' + id).className = 'nav-btn' + (id === m ? ' active' : '');
   });
+  document.getElementById('badge-shelf').style.display = m === 'practice' ? 'none' : '';
 
   if (m === 'history') {
     document.getElementById('practice-panel').style.display = 'none';
@@ -1979,7 +2003,7 @@ function checkAnswer() {
     fb.textContent = msg;
 
     var thresholds = getBadgeThresholds(sessionQueue.length);
-    if (thresholds.indexOf(correct) !== -1 && badgesEarned < 5) {
+    if (mode !== 'practice' && thresholds.indexOf(correct) !== -1 && badgesEarned < 5) {
       awardBadge();
     }
   } else {
@@ -2055,7 +2079,9 @@ function showSummary() {
   document.getElementById('summary-detail').textContent = correct + ' correct out of ' + total + ' answered';
 
   var badgeStr = '';
-  for (var i = 0; i < badgesEarned; i++) badgeStr += BADGES[i].emoji;
+  if (mode !== 'practice') {
+    for (var i = 0; i < badgesEarned; i++) badgeStr += BADGES[i].emoji;
+  }
   document.getElementById('summary-badges').textContent = badgeStr || '';
 
   var msg = '';
@@ -2066,9 +2092,20 @@ function showSummary() {
   else msg = 'Good try, Alannah! Every session makes you stronger!';
   document.getElementById('summary-message').textContent = msg;
   document.getElementById('summary-title').textContent =
+    mode === 'practice' ? 'Practice Complete!' :
     badgesEarned === 5 ? 'ALL BADGES COLLECTED!' : 'Session Complete!';
 
-  if (badgesEarned >= 3) spawnConfetti();
+  if (mode !== 'practice' && badgesEarned >= 3) spawnConfetti();
+
+  if (mode === 'practice') {
+    practiceUsed[chosenSubject] = true;
+    document.getElementById('summary-message').textContent = pick(PRACTICE_NUDGE);
+    document.getElementById('btn-go-again').textContent = 'Start Test Mode!';
+    document.getElementById('btn-go-again').onclick = function() { setMode('test'); };
+  } else {
+    document.getElementById('btn-go-again').textContent = 'Go Again!';
+    document.getElementById('btn-go-again').onclick = function() { startSession(); };
+  }
 }
 
 // ── Dice Game ────────────────────────────────────────────────────────────────

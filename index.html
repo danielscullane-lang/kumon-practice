@@ -791,6 +791,14 @@
     color: var(--muted);
     margin-top: 6px;
   }
+  #main.practice-mode {
+    filter: saturate(0.15);
+  }
+  #main.practice-mode .card { background: #f5f5f5; border-color: #d0d0d0; }
+  #main.practice-mode .nav-btn.active { background: #888; }
+  #main.practice-mode .btn { background: #999; }
+  #main.practice-mode .btn:hover { background: #777; }
+  #main.practice-mode h1, #main.practice-mode h2 { color: #555; }
   .rating-btn {
     font-size: 3rem;
     background: var(--card);
@@ -1683,6 +1691,7 @@ function chooseSubject(subj) {
     document.getElementById('nav-test').className = 'nav-btn';
   }
   document.getElementById('badge-shelf').style.display = mode === 'practice' ? 'none' : '';
+  document.getElementById('main').className = mode === 'practice' ? 'practice-mode' : '';
   populateFilters();
   startSession();
 }
@@ -1752,6 +1761,7 @@ function setMode(m) {
     document.getElementById('nav-' + id).className = 'nav-btn' + (id === m ? ' active' : '');
   });
   document.getElementById('badge-shelf').style.display = m === 'practice' ? 'none' : '';
+  document.getElementById('main').className = m === 'practice' ? 'practice-mode' : '';
 
   if (m === 'history') {
     document.getElementById('practice-panel').style.display = 'none';

@@ -261,6 +261,39 @@
   @media (max-width: 480px) {
     .stacked-sum { font-size: 1.5rem; }
   }
+  .animal-visual {
+    display: none;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .animal-visual.active { display: block; }
+  .animal-visual .animal-emoji {
+    font-size: 4rem;
+    line-height: 1.2;
+    display: block;
+    margin-bottom: 4px;
+    filter: brightness(0) saturate(0);
+    transition: filter 0.4s ease;
+  }
+  .animal-visual .animal-emoji.revealed {
+    filter: none;
+    animation: animalReveal 0.5s ease;
+  }
+  .animal-visual .animal-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .animal-visual .animal-label.revealed { opacity: 1; }
+  @keyframes animalReveal {
+    0% { transform: scale(0.5) rotate(-10deg); }
+    50% { transform: scale(1.2) rotate(5deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
   .question-num {
     font-size: 0.75rem;
     color: var(--muted);
@@ -915,6 +948,10 @@
             <span class="tag stretch" id="tag-stretch" style="display:none">Stretch</span>
             <span class="question-num" id="tag-ref"></span>
           </div>
+          <div class="animal-visual" id="animal-visual">
+            <span class="animal-emoji" id="animal-emoji"></span>
+            <span class="animal-label" id="animal-label"></span>
+          </div>
           <div class="question-text" id="question-text">Pick your filters and press Let's Go!</div>
           <div class="mcq-options" id="mcq-options"></div>
           <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
@@ -1049,6 +1086,21 @@ var GREETINGS_MIX = [
   'Pick & Mix time — let\'s go!',
   'Time to shine, Alannah!',
 ];
+
+var ANIMAL_EMOJI = {
+  giraffe: '🦒', elephant: '🐘', zebra: '🦓', lion: '🦁', cheetah: '🐆',
+  hippo: '🦛', rhino: '🦏', gorilla: '🦍', flamingo: '🦩', meerkat: '🐾',
+  leopard: '🐆', ostrich: '🪶', crocodile: '🐊', warthog: '🐗', chameleon: '🦎',
+  wildebeest: '🐃', hyena: '🐺', lemur: '🐒', pangolin: '🦔', wild_dog: '🐕'
+};
+var ANIMAL_NAMES = {
+  giraffe: 'Giraffe', elephant: 'Elephant', zebra: 'Zebra', lion: 'Lion',
+  cheetah: 'Cheetah', hippo: 'Hippopotamus', rhino: 'Rhinoceros', gorilla: 'Gorilla',
+  flamingo: 'Flamingo', meerkat: 'Meerkat', leopard: 'Leopard', ostrich: 'Ostrich',
+  crocodile: 'Nile Crocodile', warthog: 'Warthog', chameleon: 'Chameleon',
+  wildebeest: 'Wildebeest', hyena: 'Hyena', lemur: 'Lemur', pangolin: 'Pangolin',
+  wild_dog: 'African Wild Dog'
+};
 
 var allQuestions = [];
 var sessionQueue = [];
@@ -1549,7 +1601,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    var batchSize = chosenSubject === 'Decisions' ? 5 : chosenSubject === '11+' ? 10 : 20;
+    var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities') ? 10 : 20;
     sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 
@@ -1613,6 +1665,22 @@ function showQuestion() {
   document.getElementById('tag-ref').textContent = 'Paper ' + q.paper + ' · Q' + q.qnum;
   document.getElementById('tag-stretch').style.display =
     (q.notes && q.notes.indexOf('★') !== -1) ? 'inline-block' : 'none';
+
+  var animalVis = document.getElementById('animal-visual');
+  var animalEmoji = document.getElementById('animal-emoji');
+  var animalLabel = document.getElementById('animal-label');
+  var imgMatch = q.notes && q.notes.match(/IMG:(\w+)/);
+  if (imgMatch && ANIMAL_EMOJI[imgMatch[1]]) {
+    animalVis.className = 'animal-visual active';
+    animalEmoji.textContent = ANIMAL_EMOJI[imgMatch[1]];
+    animalEmoji.className = 'animal-emoji';
+    animalLabel.textContent = '';
+    animalLabel.className = 'animal-label';
+    animalVis.dataset.animal = imgMatch[1];
+  } else {
+    animalVis.className = 'animal-visual';
+    animalVis.dataset.animal = '';
+  }
 
   var qEl = document.getElementById('question-text');
   var mcqEl = document.getElementById('mcq-options');
@@ -1739,6 +1807,15 @@ function checkAnswer() {
     fb.textContent = pick(ENCOURAGE) + ' The answer was: ' + correctAns;
   }
   fb.style.display = 'block';
+
+  var animalVis = document.getElementById('animal-visual');
+  if (animalVis.dataset.animal) {
+    var emojiEl = document.getElementById('animal-emoji');
+    var labelEl = document.getElementById('animal-label');
+    emojiEl.className = 'animal-emoji revealed';
+    labelEl.textContent = ANIMAL_NAMES[animalVis.dataset.animal] || '';
+    labelEl.className = 'animal-label revealed';
+  }
 
   document.querySelector('.btn-check').style.display = 'none';
   document.querySelector('.btn-skip').style.display = 'none';

@@ -852,6 +852,11 @@
             <div class="chooser-label">Decisions</div>
             <div class="chooser-desc" id="chooser-decisions-count"></div>
           </button>
+          <button class="chooser-btn" onclick="chooseSubject('African Animals')">
+            <div class="chooser-icon">🦁</div>
+            <div class="chooser-label">African Animals</div>
+            <div class="chooser-desc" id="chooser-african-count"></div>
+          </button>
           <button class="chooser-btn" onclick="chooseSubject('Mix')">
             <div class="chooser-icon">🎲</div>
             <div class="chooser-label">Pick &amp; Mix</div>
@@ -1085,6 +1090,12 @@ var GREETINGS_MIX = [
   'Ready for a bit of everything?',
   'Pick & Mix time — let\'s go!',
   'Time to shine, Alannah!',
+];
+var GREETINGS_AFRICAN_ANIMALS = [
+  'Safari time, Alannah!',
+  'Let\'s explore Africa\'s wildlife!',
+  'Time to meet some amazing animals!',
+  'Ready for a wild adventure?',
 ];
 
 var ANIMAL_EMOJI = {
@@ -1428,6 +1439,8 @@ function showChooser() {
   document.getElementById('chooser-11plus-count').textContent = elevenCount > 0 ? elevenCount + ' questions' : 'Coming soon!';
   var decisionsCount = allQuestions.filter(function(q) { return q.subject === 'Decisions'; }).length;
   document.getElementById('chooser-decisions-count').textContent = decisionsCount > 0 ? decisionsCount + ' questions' : 'Coming soon!';
+  var africanCount = allQuestions.filter(function(q) { return q.topic === 'African Animals'; }).length;
+  document.getElementById('chooser-african-count').textContent = africanCount > 0 ? africanCount + ' questions' : 'Coming soon!';
   document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
@@ -1437,8 +1450,8 @@ function showChooser() {
 
 function chooseSubject(subj) {
   chosenSubject = subj;
-  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Decisions' ? GREETINGS_DECISIONS : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
-  var pool = subj === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === subj; });
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Decisions' ? GREETINGS_DECISIONS : subj === 'African Animals' ? GREETINGS_AFRICAN_ANIMALS : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var pool = subj === 'Mix' ? allQuestions : subj === 'African Animals' ? allQuestions.filter(function(q) { return q.topic === 'African Animals'; }) : allQuestions.filter(function(q) { return q.subject === subj; });
   if (pool.length === 0) {
     document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';
     return;
@@ -1457,7 +1470,7 @@ function backToChooser() {
 function populateFilters() {
   var ages = []; var topics = []; var papers = [];
   var ageSet = {}; var topicSet = {}; var paperSet = {};
-  var pool = chosenSubject === 'Mix' ? allQuestions : allQuestions.filter(function(q) { return q.subject === chosenSubject; });
+  var pool = chosenSubject === 'Mix' ? allQuestions : chosenSubject === 'African Animals' ? allQuestions.filter(function(q) { return q.topic === 'African Animals'; }) : allQuestions.filter(function(q) { return q.subject === chosenSubject; });
   for (var i = 0; i < pool.length; i++) {
     var q = pool[i];
     if (!ageSet[q.age]) { ageSet[q.age] = true; ages.push(q.age); }
@@ -1497,7 +1510,8 @@ function getFiltered() {
   var topic = document.getElementById('filter-topic').value;
   var paper = document.getElementById('filter-paper').value;
   return allQuestions.filter(function(q) {
-    if (chosenSubject !== 'Mix' && q.subject !== chosenSubject) return false;
+    if (chosenSubject === 'African Animals') { if (q.topic !== 'African Animals') return false; }
+    else if (chosenSubject !== 'Mix' && q.subject !== chosenSubject) return false;
     return (!age || q.age === age) && (!topic || q.topic === topic) && (!paper || q.paper === paper);
   });
 }
@@ -1601,7 +1615,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities') ? 10 : 20;
+    var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities' || chosenSubject === 'African Animals') ? 10 : 20;
     sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 

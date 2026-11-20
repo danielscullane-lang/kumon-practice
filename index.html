@@ -1272,17 +1272,60 @@ function updateAlltimeStats() {
   document.getElementById('alltime-questions').textContent = totalQuestions;
 }
 
+// ── Offline result queue ─────────────────────────────────────────────────────
+function getResultQueue() {
+  try { return JSON.parse(localStorage.getItem('resultQueue') || '[]'); } catch(e) { return []; }
+}
+function setResultQueue(q) {
+  try { localStorage.setItem('resultQueue', JSON.stringify(q)); } catch(e) {}
+}
+function flushResultQueue() {
+  if (!SCRIPT_URL) return;
+  var queue = getResultQueue();
+  if (queue.length === 0) return;
+  var remaining = [];
+  var sending = queue.slice();
+  setResultQueue([]);
+  sending.forEach(function(record) {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    }).catch(function() {
+      remaining.push(record);
+      setResultQueue(getResultQueue().concat(remaining));
+      remaining = [];
+    });
+  });
+}
+window.addEventListener('online', flushResultQueue);
+
 // ── Google Sheets save ───────────────────────────────────────────────────────
 function saveToSheet(record) {
   if (!SCRIPT_URL) return;
+  if (!navigator.onLine) {
+    var q = getResultQueue();
+    q.push(record);
+    setResultQueue(q);
+    return;
+  }
   try {
     fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record)
+    }).catch(function() {
+      var q = getResultQueue();
+      q.push(record);
+      setResultQueue(q);
     });
-  } catch(e) {}
+  } catch(e) {
+    var q = getResultQueue();
+    q.push(record);
+    setResultQueue(q);
+  }
 }
 
 function saveSession() {
@@ -2168,6 +2211,11 @@ document.addEventListener('keydown', function(e) {
 loadHistory();
 fetchRemoteHistory();
 loadData();
+flushResultQueue();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>

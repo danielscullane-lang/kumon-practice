@@ -889,6 +889,82 @@
   .dice-predict .dice-btn:disabled, .dice-predict .dice-num-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   @keyframes diceBounce { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
   .dice-bounce { animation: diceBounce 0.3s ease; }
+
+  /* ── Lessons Library ────────────────────────────────────────── */
+  .lessons-banner {
+    display: block;
+    width: 100%;
+    max-width: 540px;
+    margin: 20px auto 0;
+    padding: 18px 24px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .lessons-banner:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4); }
+  .lessons-banner:active { transform: translateY(1px); }
+  .lessons-banner-icon { font-size: 1.4rem; margin-right: 8px; }
+  .lessons-banner-sub { display: block; font-size: 0.8rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+
+  .lessons-library { display: none; max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .lessons-library.active { display: block; }
+  .lessons-search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .lessons-search {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--card);
+    outline: none;
+  }
+  .lessons-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .lessons-search::placeholder { color: var(--muted); }
+  .lessons-count { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 14px; }
+  .lessons-grid { display: flex; flex-direction: column; gap: 12px; }
+  .lesson-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text);
+    width: 100%;
+  }
+  .lesson-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+  .lesson-card:active { transform: translateY(1px); }
+  .lesson-card-icon { font-size: 2.2rem; flex-shrink: 0; }
+  .lesson-card-info { flex: 1; min-width: 0; }
+  .lesson-card-title { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 2px; }
+  .lesson-card-subject { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .lesson-card-desc { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .lesson-card-arrow { font-size: 1.3rem; color: var(--muted); flex-shrink: 0; }
+  .lessons-empty { text-align: center; color: var(--muted); font-weight: 700; padding: 32px 0; }
+
+  .lesson-viewer { display: none; max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .lesson-viewer.active { display: block; }
+  .lesson-viewer-content { margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -975,6 +1051,10 @@
           <a class="results-link" onclick="showResults()" style="margin:0">📊 My Results</a>
           <a class="results-link" onclick="showDiceGame()" style="margin:0">🎲 Dice Game</a>
         </div>
+        <button class="lessons-banner" onclick="showLessons()">
+          <span class="lessons-banner-icon">📚</span> LEARNING TAKES PLACE HERE
+          <span class="lessons-banner-sub">Interactive lessons to explore</span>
+        </button>
       </div>
     </div>
 
@@ -1039,6 +1119,24 @@
         <h3>Recent Sessions</h3>
         <div id="results-log"></div>
       </div>
+    </div>
+
+    <!-- Lessons Library -->
+    <div id="lessons-library" class="lessons-library">
+      <button class="btn-back" onclick="hideLessons()">&#8592; Back</button>
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--primary-dark);margin:0 0 4px;text-align:center">📚 Learning Takes Place Here</h2>
+      <p style="text-align:center;color:var(--muted);font-weight:600;margin:0 0 16px">Interactive lessons to explore and learn from</p>
+      <div class="lessons-search-box">
+        <input type="text" class="lessons-search" id="lessons-search" placeholder="Search lessons..." oninput="filterLessons()">
+      </div>
+      <div class="lessons-count" id="lessons-count"></div>
+      <div class="lessons-grid" id="lessons-grid"></div>
+    </div>
+
+    <!-- Lesson Viewer -->
+    <div id="lesson-viewer" class="lesson-viewer">
+      <button class="btn-back" onclick="closeLessonViewer()">&#8592; Back to lessons</button>
+      <div class="lesson-viewer-content" id="lesson-viewer-content"></div>
     </div>
 
     <div id="main" style="display:none">
@@ -2336,6 +2434,189 @@ function showDiceResult(msg, type, prev, curr) {
   el.textContent = msg;
   el.className = 'dice-result ' + type + ' dice-bounce';
   setTimeout(function() { el.className = 'dice-result ' + type; }, 300);
+}
+
+// ── Lessons Library ──────────────────────────────────────────────────────────
+var LESSONS = [
+  {
+    id: 'water-cycle',
+    title: 'The Water Cycle',
+    icon: '💧',
+    subject: 'Science',
+    desc: 'How Earth recycles its water, over and over again',
+    tags: ['science', 'water', 'evaporation', 'condensation', 'precipitation', 'collection', 'geography', 'weather', 'rain', 'clouds']
+  }
+];
+
+var LESSON_CONTENT = {};
+LESSON_CONTENT['water-cycle'] = '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet"><div class="aal-wc" id="aal-wc-root"><div class="aal-wc-header"><h1>The Water Cycle \u{1F4A7}</h1><p>How Earth recycles its water, over and over again</p></div><div class="aal-wc-nav" id="aal-wc-nav"><div class="aal-wc-dots" id="aal-wc-dots" aria-hidden="true"></div><button class="aal-wc-next" type="button" id="aal-wc-next">Next ➡</button></div><section class="aal-wc-screen" data-screen><div class="aal-wc-card"><h2>Hello, scientist! \u{1F50D}</h2><p>Every drop of water you have ever drunk has been around <strong>millions of times before</strong>! Water never disappears. It just travels around and around in a giant loop called the <strong>water cycle</strong>.</p><p class="aal-wc-muted">We will explore it one step at a time. There are four steps to discover.</p><button class="aal-wc-cta" type="button" data-goto="1">Let\'s start! \u{1F680}</button></div></section><section class="aal-wc-screen" data-screen hidden><div class="aal-wc-card"><h2>First, a puzzle \u{1F914}</h2><p>This diagram shows the water cycle. But look closely... the labels are missing!</p><p class="aal-wc-question">Before you go on, think about this: <strong>where do you think the rain comes from, if no new water ever arrives on Earth?</strong></p><p class="aal-wc-muted">Say your idea out loud, or hold it in your head. Then carry on to find out.</p><button class="aal-wc-cta" type="button" data-goto="2">Reveal the diagram ▶</button></div></section><section class="aal-wc-screen" data-screen hidden><div class="aal-wc-card"><h2>The four stages</h2><p>Use the buttons to meet each stage. Watch the diagram: it highlights the part we are learning about.</p><div class="aal-wc-svgwrap"><svg viewBox="0 0 700 360" role="img" aria-label="Diagram of the water cycle" class="aal-wc-diagram"><rect x="0" y="0" width="700" height="360" rx="16" fill="#ede9fe"/><circle id="aal-sun" cx="90" cy="70" r="34" fill="#fbbf24"/><circle id="aal-sun-core" cx="90" cy="70" r="26" fill="#f59e0b"/><path id="aal-vap1" d="M420 300 C 430 240, 450 200, 445 150" stroke="#8b5cf6" stroke-width="5" fill="none" opacity="0.35"/><path id="aal-vap2" d="M480 305 C 500 250, 520 210, 510 165" stroke="#8b5cf6" stroke-width="5" fill="none" opacity="0.35"/><g id="aal-cloud" fill="#ffffff" stroke="#e9d5ff" stroke-width="3" opacity="0.5"><ellipse cx="470" cy="120" rx="60" ry="30"/><ellipse cx="430" cy="130" rx="40" ry="22"/><ellipse cx="510" cy="130" rx="42" ry="22"/></g><g id="aal-rain" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" opacity="0.35"><line x1="440" y1="165" x2="433" y2="185"/><line x1="465" y1="170" x2="458" y2="190"/><line x1="490" y1="165" x2="483" y2="185"/><line x1="515" y1="170" x2="508" y2="190"/></g><path id="aal-mtn1" d="M60 260 L150 170 L240 260 Z" fill="#a78bfa"/><path id="aal-mtn2" d="M180 260 L280 150 L390 260 Z" fill="#8b5cf6"/><path id="aal-river" d="M250 270 C 300 265, 340 275, 380 292 C 420 306, 470 310, 520 306" stroke="#7dd3fc" stroke-width="14" fill="none" stroke-linecap="round"/><path id="aal-sea" d="M0 300 Q 60 288 120 300 T 240 300 T 360 300 T 480 300 T 600 300 T 700 300 L700 360 L0 360 Z" fill="#38bdf8"/><path id="aal-sea-edge" d="M0 300 Q 60 288 120 300 T 240 300 T 360 300 T 480 300 T 600 300 T 700 300" stroke="#0ea5e9" stroke-width="4" fill="none"/><g font-family="Nunito, sans-serif" font-size="16" font-weight="800" fill="#1e1b4b" opacity="0.45" id="aal-labels"><text x="30" y="80">sun</text><text x="620" y="330">sea</text><text x="205" y="140">mountains</text><text x="440" y="70">cloud</text></g></svg></div><div class="aal-wc-stepper"><div class="aal-wc-step" data-step><span class="aal-wc-step-title">☀️ Stage 1: Evaporation</span><span class="aal-wc-step-body">The sun heats water in seas, lakes and rivers. It warms up so much that it turns into an invisible gas called <strong>water vapour</strong> and rises into the air. You can see a mini version of this when a puddle disappears on a sunny day!</span></div><div class="aal-wc-step" data-step hidden><span class="aal-wc-step-title">☁️ Stage 2: Condensation</span><span class="aal-wc-step-body">High in the sky, the air is much colder. The water vapour cools down and turns back into tiny liquid droplets. Billions of these droplets clump together to form <strong>clouds</strong>.</span></div><div class="aal-wc-step" data-step hidden><span class="aal-wc-step-title">\u{1F327}️ Stage 3: Precipitation</span><span class="aal-wc-step-body">When the droplets in a cloud join together they become too heavy to float. They fall back to Earth as <strong>precipitation</strong>: rain, snow, sleet or hail.</span></div><div class="aal-wc-step" data-step hidden><span class="aal-wc-step-title">\u{1F30A} Stage 4: Collection</span><span class="aal-wc-step-body">The fallen water collects in rivers, lakes, oceans and underground. From there, the sun starts heating it again... and the whole cycle begins once more. It has been repeating for <strong>4 billion years</strong>!</span></div><div class="aal-wc-step-controls"><button class="aal-wc-mini" type="button" id="aal-wc-prev-step">⬅ Back</button><span class="aal-wc-step-count" id="aal-wc-step-count">Stage 1 of 4</span><button class="aal-wc-mini" type="button" id="aal-wc-next-step">Next stage ▶</button></div></div><button class="aal-wc-cta" type="button" data-goto="3">I know the four stages! ▶</button></div></section><section class="aal-wc-screen" data-screen hidden><div class="aal-wc-card"><h2>Words for a scientist \u{1F4DD}</h2><p>These are the four special words. Tap a word to check what it means.</p><div class="aal-wc-tags" id="aal-wc-tags"><button class="aal-wc-tag" type="button" data-def="Water turns into an invisible gas and rises into the air, warmed by the sun.">evaporation</button><button class="aal-wc-tag" type="button" data-def="Water vapour cools down high in the sky and turns into tiny droplets that make clouds.">condensation</button><button class="aal-wc-tag" type="button" data-def="Water falls from clouds as rain, snow, sleet or hail.">precipitation</button><button class="aal-wc-tag" type="button" data-def="Water gathers in rivers, lakes, oceans and underground, ready to evaporate again.">collection</button></div><div class="aal-wc-def" id="aal-wc-def" hidden></div><button class="aal-wc-cta" type="button" data-goto="4">One last challenge ▶</button></div></section><section class="aal-wc-screen" data-screen hidden><div class="aal-wc-card"><h2>Think about it \u{1F9E0}</h2><p>Now you are the teacher! Answer these in your head (or tell someone nearby), then reveal the ideas.</p><div class="aal-wc-think"><button class="aal-wc-think-btn" type="button" data-think><span class="aal-wc-think-q">\u{1F4AC} Can you retell the water cycle in four steps, using the four special words?</span><span class="aal-wc-think-a" hidden>Sun heats water (evaporation) → vapour cools into clouds (condensation) → droplets fall as rain (precipitation) → water gathers in rivers and seas (collection) → and round again!</span></button><button class="aal-wc-think-btn" type="button" data-think><span class="aal-wc-think-q">\u{1F4AC} What do you think would happen if the sun stopped shining?</span><span class="aal-wc-think-a" hidden>Evaporation would slow down hugely, so far less water vapour would rise. Clouds and rain would eventually fade, and the cycle would almost stop. That is why the sun is called the engine of the water cycle.</span></button><button class="aal-wc-think-btn" type="button" data-think><span class="aal-wc-think-q">\u{1F4AC} Is the water in your glass today the same water a dinosaur once drank?</span><span class="aal-wc-think-a" hidden>It could be! Earth has roughly the same amount of water as it did millions of years ago, endlessly recycled through the cycle. Some of it may well have been a dinosaur\'s puddle.</span></button></div><div class="aal-wc-badge">\u{1F31F} You explored the whole water cycle. Watch out for the next adventure in this series!</div></div></section></div>';
+
+var LESSON_STYLE = {};
+LESSON_STYLE['water-cycle'] = '.aal-wc{--aal-bg:#faf5ff;--aal-card:#ffffff;--aal-primary:#8b5cf6;--aal-primary-dark:#7c3aed;--aal-primary-light:#ede9fe;--aal-secondary:#ec4899;--aal-success:#10b981;--aal-success-bg:#ecfdf5;--aal-text:#1e1b4b;--aal-muted:#6b7280;--aal-border:#e9d5ff;--aal-tag-bg:#fdf2f8;--aal-tag-text:#be185d;font-family:"Nunito","Segoe UI",Arial,sans-serif;color:var(--aal-text);background:var(--aal-bg);border-radius:16px;padding:4px;line-height:1.55;font-size:17px}.aal-wc *{box-sizing:border-box}.aal-wc-header{background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:14px;padding:24px;text-align:center;color:#fff;margin-bottom:12px}.aal-wc-header h1{margin:0 0 6px;font-size:30px;font-weight:800}.aal-wc-header p{margin:0;font-weight:700;opacity:.95}.aal-wc-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.aal-wc-dots{display:flex;gap:8px}.aal-wc-dot{width:12px;height:12px;border-radius:50%;background:var(--aal-border);transition:background .2s,transform .2s}.aal-wc-dot.active{background:var(--aal-primary);transform:scale(1.25)}.aal-wc-dot.done{background:var(--aal-secondary)}.aal-wc-next{border:none;border-radius:999px;padding:10px 20px;font-family:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#8b5cf6,#ec4899);cursor:pointer;box-shadow:0 4px 16px rgba(139,92,246,.25);transition:transform .2s,box-shadow .2s,opacity .2s}.aal-wc-next:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(139,92,246,.35)}.aal-wc-next:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}.aal-wc-card{background:var(--aal-card);border:1px solid var(--aal-border);border-radius:14px;box-shadow:0 4px 16px rgba(139,92,246,.1);padding:20px}.aal-wc-card h2{margin:0 0 12px;font-size:22px;font-weight:800;color:var(--aal-primary-dark)}.aal-wc-card p{margin:0 0 10px}.aal-wc-muted{color:var(--aal-muted);font-weight:700}.aal-wc-question{background:var(--aal-primary-light);border-left:5px solid var(--aal-primary);border-radius:8px;padding:12px 14px}.aal-wc-cta,.aal-wc-mini{border:none;border-radius:12px;padding:12px 20px;font-family:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#8b5cf6,#ec4899);cursor:pointer;box-shadow:0 4px 16px rgba(139,92,246,.25);transition:transform .2s,box-shadow .2s;margin-top:6px}.aal-wc-cta:hover,.aal-wc-mini:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(139,92,246,.35)}.aal-wc-mini:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}.aal-wc-mini{padding:9px 16px;font-size:15px;background:var(--aal-primary-dark)}.aal-wc-svgwrap{border-radius:10px;overflow:hidden;margin-bottom:12px}.aal-wc-diagram{width:100%;height:auto;display:block}.aal-wc-step{border:2px solid var(--aal-border);border-radius:12px;padding:14px 16px;background:var(--aal-card)}.aal-wc-step-title{display:block;font-weight:800;font-size:19px}.aal-wc-step-body{display:block;margin-top:8px}.aal-wc-step-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}.aal-wc-step-count{font-weight:800;color:var(--aal-muted);font-size:15px}.aal-wc-tags{display:flex;flex-wrap:wrap;gap:8px}.aal-wc-tag{background:var(--aal-tag-bg);color:var(--aal-tag-text);border:2px solid transparent;border-radius:999px;padding:8px 16px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;transition:border-color .2s,transform .2s}.aal-wc-tag:hover{border-color:var(--aal-tag-text);transform:translateY(-1px)}.aal-wc-tag.selected{border-color:var(--aal-secondary);background:#fce7f3}.aal-wc-def{margin-top:12px;background:var(--aal-tag-bg);border:1px dashed var(--aal-tag-text);border-radius:10px;padding:12px 14px;color:var(--aal-tag-text);font-weight:700}.aal-wc-think-btn{display:block;width:100%;text-align:left;background:var(--aal-card);border:2px solid var(--aal-border);border-radius:12px;padding:12px 16px;margin-bottom:10px;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--aal-text);transition:box-shadow .2s,transform .2s,background .2s}.aal-wc-think-btn:hover{box-shadow:0 12px 28px rgba(139,92,246,.25);transform:translateY(-2px);background:var(--aal-primary-light)}.aal-wc-think-q{display:block;font-weight:800}.aal-wc-think-a{display:block;margin-top:10px;padding-top:10px;border-top:1px dashed var(--aal-border);font-weight:400}.aal-wc-think-btn[aria-expanded="true"]{border-color:var(--aal-primary);background:var(--aal-primary-light)}.aal-wc-badge{margin-top:14px;padding:14px;border-radius:12px;font-weight:800;font-size:18px;text-align:center;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;color:#1e1b4b}';
+
+var LESSON_SCRIPT = {};
+LESSON_SCRIPT['water-cycle'] = function() {
+  var root = document.getElementById('aal-wc-root');
+  if (!root) return;
+  var screens = Array.prototype.slice.call(root.querySelectorAll('[data-screen]'));
+  var nextBtn = document.getElementById('aal-wc-next');
+  var dotsBox = document.getElementById('aal-wc-dots');
+  var current = 0;
+  screens.forEach(function() {
+    var d = document.createElement('span');
+    d.className = 'aal-wc-dot';
+    dotsBox.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsBox.children);
+  function show(i) {
+    current = Math.max(0, Math.min(i, screens.length - 1));
+    screens.forEach(function(s, k) { s.hidden = (k !== current); });
+    dots.forEach(function(d, k) { d.className = 'aal-wc-dot' + (k === current ? ' active' : (k < current ? ' done' : '')); });
+    nextBtn.disabled = (current === screens.length - 1);
+    nextBtn.textContent = (current === screens.length - 1) ? 'The end \u{1F389}' : 'Next ➡';
+  }
+  nextBtn.addEventListener('click', function() { show(current + 1); });
+  root.querySelectorAll('[data-goto]').forEach(function(b) {
+    b.addEventListener('click', function() { show(parseInt(b.getAttribute('data-goto'), 10)); });
+  });
+  var stageGroups = {
+    0: ['aal-sun','aal-sun-core','aal-sea','aal-sea-edge'],
+    1: ['aal-vap1','aal-vap2','aal-cloud'],
+    2: ['aal-rain','aal-cloud'],
+    3: ['aal-river','aal-sea','aal-sea-edge','aal-mtn1','aal-mtn2']
+  };
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-wc-prev-step');
+  var nextStepBtn = document.getElementById('aal-wc-next-step');
+  var stepCount = document.getElementById('aal-wc-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    ['aal-sun','aal-sun-core','aal-vap1','aal-vap2','aal-cloud','aal-rain','aal-mtn1','aal-mtn2','aal-river','aal-sea','aal-sea-edge'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('aal-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Stage ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart stages ↺' : 'Next stage ▶';
+    clearHighlight();
+    (stageGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('aal-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-wc-def');
+  root.querySelectorAll('#aal-wc-tags .aal-wc-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-wc-tags .aal-wc-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-wc-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
+
+function showLessons() {
+  document.getElementById('chooser').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('results-dashboard').className = 'results-dashboard';
+  document.getElementById('dice-game').className = 'dice-game';
+  document.getElementById('lesson-viewer').className = 'lesson-viewer';
+  document.getElementById('lessons-library').className = 'lessons-library active';
+  document.getElementById('lessons-search').value = '';
+  renderLessonCards(LESSONS);
+}
+
+function hideLessons() {
+  document.getElementById('lessons-library').className = 'lessons-library';
+  showChooser();
+}
+
+function renderLessonCards(list) {
+  var grid = document.getElementById('lessons-grid');
+  var countEl = document.getElementById('lessons-count');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="lessons-empty">No lessons match your search.</div>';
+    countEl.textContent = '0 lessons';
+    return;
+  }
+  countEl.textContent = list.length + ' lesson' + (list.length !== 1 ? 's' : '');
+  grid.innerHTML = '';
+  list.forEach(function(lesson) {
+    var card = document.createElement('button');
+    card.className = 'lesson-card';
+    card.onclick = function() { openLesson(lesson.id); };
+    card.innerHTML = '<span class="lesson-card-icon">' + lesson.icon + '</span>' +
+      '<div class="lesson-card-info">' +
+        '<div class="lesson-card-title">' + lesson.title + '</div>' +
+        '<div class="lesson-card-subject">' + lesson.subject + '</div>' +
+        '<div class="lesson-card-desc">' + lesson.desc + '</div>' +
+      '</div>' +
+      '<span class="lesson-card-arrow">›</span>';
+    grid.appendChild(card);
+  });
+}
+
+function filterLessons() {
+  var q = document.getElementById('lessons-search').value.toLowerCase().trim();
+  if (!q) { renderLessonCards(LESSONS); return; }
+  var filtered = LESSONS.filter(function(l) {
+    return l.title.toLowerCase().indexOf(q) !== -1 ||
+           l.subject.toLowerCase().indexOf(q) !== -1 ||
+           l.desc.toLowerCase().indexOf(q) !== -1 ||
+           l.tags.some(function(t) { return t.indexOf(q) !== -1; });
+  });
+  renderLessonCards(filtered);
+}
+
+function openLesson(id) {
+  document.getElementById('lessons-library').className = 'lessons-library';
+  var viewer = document.getElementById('lesson-viewer');
+  var content = document.getElementById('lesson-viewer-content');
+  if (LESSON_STYLE[id]) {
+    var style = document.createElement('style');
+    style.id = 'lesson-style-' + id;
+    style.textContent = LESSON_STYLE[id];
+    content.innerHTML = '';
+    content.appendChild(style);
+    var div = document.createElement('div');
+    div.innerHTML = LESSON_CONTENT[id];
+    content.appendChild(div);
+  } else {
+    content.innerHTML = LESSON_CONTENT[id] || '<p>Lesson not found.</p>';
+  }
+  viewer.className = 'lesson-viewer active';
+  window.scrollTo(0, 0);
+  if (LESSON_SCRIPT[id]) {
+    setTimeout(function() { LESSON_SCRIPT[id](); }, 50);
+  }
+}
+
+function closeLessonViewer() {
+  document.getElementById('lesson-viewer').className = 'lesson-viewer';
+  document.getElementById('lesson-viewer-content').innerHTML = '';
+  showLessons();
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

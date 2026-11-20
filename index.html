@@ -796,6 +796,59 @@
     header h1 { font-size: 1.5rem; }
     .chooser-btn { min-width: 140px; padding: 20px 16px; }
   }
+
+  /* ── Dice Game ─────────────────────────────────────────────── */
+  .dice-game { display: none; max-width: 480px; margin: 0 auto; padding: 20px 16px; text-align: center; }
+  .dice-game.active { display: block; }
+  .dice-title { font-size: 1.8rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px; }
+  .dice-subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 16px; min-height: 1.4em; }
+  .dice-stats { display: flex; justify-content: center; gap: 16px; margin-bottom: 20px; }
+  .dice-stat { background: var(--card); border-radius: 12px; padding: 10px 16px; box-shadow: var(--shadow); min-width: 64px; }
+  .dice-stat-num { display: block; font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+  .dice-stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .dice-scene { width: 120px; height: 120px; perspective: 400px; margin: 24px auto; }
+  .dice-cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.1s; }
+  .dice-cube.rolling { animation: diceRoll 0.8s ease-out; }
+  .dice-face { position: absolute; width: 120px; height: 120px; background: #fff; border: 3px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 12px rgba(139,92,246,0.06); }
+  .dice-face svg { width: 80%; height: 80%; }
+  .dice-face-1 { transform: rotateY(0deg) translateZ(60px); }
+  .dice-face-2 { transform: rotateY(180deg) translateZ(60px); }
+  .dice-face-3 { transform: rotateY(-90deg) translateZ(60px); }
+  .dice-face-4 { transform: rotateY(90deg) translateZ(60px); }
+  .dice-face-5 { transform: rotateX(90deg) translateZ(60px); }
+  .dice-face-6 { transform: rotateX(-90deg) translateZ(60px); }
+  @keyframes diceRoll {
+    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+    20% { transform: rotateX(200deg) rotateY(140deg) rotateZ(80deg); }
+    40% { transform: rotateX(400deg) rotateY(280deg) rotateZ(160deg); }
+    60% { transform: rotateX(520deg) rotateY(380deg) rotateZ(200deg); }
+    80% { transform: rotateX(600deg) rotateY(430deg) rotateZ(220deg); }
+  }
+  .dice-result { font-size: 1.1rem; font-weight: 700; min-height: 2em; margin-bottom: 12px; }
+  .dice-result.correct { color: var(--success); }
+  .dice-result.wrong { color: var(--danger); }
+  .dice-result.exact { color: var(--secondary); }
+  .dice-controls { margin-bottom: 16px; }
+  .dice-btn { padding: 14px 28px; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .dice-btn:active { transform: scale(0.95); }
+  .dice-btn-roll { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 4px 14px rgba(139,92,246,0.3); font-size: 1.2rem; padding: 16px 48px; }
+  .dice-btn-roll:hover { box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+  .dice-btn-roll:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dice-predict { margin-top: 8px; }
+  .dice-predict-label { font-weight: 700; color: var(--text); font-size: 1.05rem; margin-bottom: 12px; }
+  .dice-predict-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 14px; }
+  .dice-btn-lower { background: #3b82f6; color: #fff; }
+  .dice-btn-same { background: #f59e0b; color: #fff; }
+  .dice-btn-higher { background: #ef4444; color: #fff; }
+  .dice-btn-lower, .dice-btn-same, .dice-btn-higher { flex: 1; max-width: 120px; }
+  .dice-predict-or { color: var(--muted); font-size: 0.8rem; margin-bottom: 10px; }
+  .dice-predict-nums { display: flex; gap: 8px; justify-content: center; }
+  .dice-num-btn { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--border); background: var(--card); font-size: 1.2rem; font-weight: 800; color: var(--primary-dark); cursor: pointer; transition: transform 0.15s, background 0.15s, border-color 0.15s; box-shadow: var(--shadow); }
+  .dice-num-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+  .dice-num-btn:active { transform: scale(0.9); }
+  .dice-predict .dice-btn:disabled, .dice-predict .dice-num-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  @keyframes diceBounce { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .dice-bounce { animation: diceBounce 0.3s ease; }
 </style>
 </head>
 <body>
@@ -864,6 +917,51 @@
           </button>
         </div>
         <a class="results-link" onclick="showResults()">📊 My Results</a>
+        <a class="results-link" onclick="showDiceGame()" style="margin-left:16px">🎲 Dice Game</a>
+      </div>
+    </div>
+
+    <!-- Dice Game -->
+    <div id="dice-game" class="dice-game">
+      <button class="btn-back" onclick="hideDiceGame()">&#8592; Back</button>
+      <h2 class="dice-title">Dice Roller</h2>
+      <p class="dice-subtitle" id="dice-subtitle">Roll the dice to start!</p>
+      <div class="dice-stats">
+        <div class="dice-stat"><span class="dice-stat-num" id="dice-streak">0</span><span class="dice-stat-label">Streak</span></div>
+        <div class="dice-stat"><span class="dice-stat-num" id="dice-best">0</span><span class="dice-stat-label">Best</span></div>
+        <div class="dice-stat"><span class="dice-stat-num" id="dice-correct">0</span><span class="dice-stat-label">Correct</span></div>
+        <div class="dice-stat"><span class="dice-stat-num" id="dice-total">0</span><span class="dice-stat-label">Rolls</span></div>
+      </div>
+      <div class="dice-scene" id="dice-scene">
+        <div class="dice-cube" id="dice-cube">
+          <div class="dice-face dice-face-1"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="10" fill="#1e1b4b"/></svg></div>
+          <div class="dice-face dice-face-2"><svg viewBox="0 0 100 100"><circle cx="28" cy="28" r="8" fill="#1e1b4b"/><circle cx="72" cy="72" r="8" fill="#1e1b4b"/></svg></div>
+          <div class="dice-face dice-face-3"><svg viewBox="0 0 100 100"><circle cx="28" cy="28" r="8" fill="#1e1b4b"/><circle cx="50" cy="50" r="8" fill="#1e1b4b"/><circle cx="72" cy="72" r="8" fill="#1e1b4b"/></svg></div>
+          <div class="dice-face dice-face-4"><svg viewBox="0 0 100 100"><circle cx="30" cy="30" r="8" fill="#1e1b4b"/><circle cx="70" cy="30" r="8" fill="#1e1b4b"/><circle cx="30" cy="70" r="8" fill="#1e1b4b"/><circle cx="70" cy="70" r="8" fill="#1e1b4b"/></svg></div>
+          <div class="dice-face dice-face-5"><svg viewBox="0 0 100 100"><circle cx="28" cy="28" r="7" fill="#1e1b4b"/><circle cx="72" cy="28" r="7" fill="#1e1b4b"/><circle cx="50" cy="50" r="7" fill="#1e1b4b"/><circle cx="28" cy="72" r="7" fill="#1e1b4b"/><circle cx="72" cy="72" r="7" fill="#1e1b4b"/></svg></div>
+          <div class="dice-face dice-face-6"><svg viewBox="0 0 100 100"><circle cx="30" cy="24" r="7" fill="#1e1b4b"/><circle cx="70" cy="24" r="7" fill="#1e1b4b"/><circle cx="30" cy="50" r="7" fill="#1e1b4b"/><circle cx="70" cy="50" r="7" fill="#1e1b4b"/><circle cx="30" cy="76" r="7" fill="#1e1b4b"/><circle cx="70" cy="76" r="7" fill="#1e1b4b"/></svg></div>
+        </div>
+      </div>
+      <div class="dice-result" id="dice-result"></div>
+      <div class="dice-controls" id="dice-controls">
+        <button class="dice-btn dice-btn-roll" id="dice-roll-btn" onclick="diceRollFirst()">Roll!</button>
+      </div>
+      <div class="dice-predict" id="dice-predict" style="display:none">
+        <p class="dice-predict-label">What will the next roll be?</p>
+        <div class="dice-predict-row">
+          <button class="dice-btn dice-btn-lower" onclick="dicePredictHLS('lower')">Lower</button>
+          <button class="dice-btn dice-btn-same" onclick="dicePredictHLS('same')">Same</button>
+          <button class="dice-btn dice-btn-higher" onclick="dicePredictHLS('higher')">Higher</button>
+        </div>
+        <p class="dice-predict-or">— or guess the exact number —</p>
+        <div class="dice-predict-nums">
+          <button class="dice-num-btn" onclick="dicePredictNum(1)">1</button>
+          <button class="dice-num-btn" onclick="dicePredictNum(2)">2</button>
+          <button class="dice-num-btn" onclick="dicePredictNum(3)">3</button>
+          <button class="dice-num-btn" onclick="dicePredictNum(4)">4</button>
+          <button class="dice-num-btn" onclick="dicePredictNum(5)">5</button>
+          <button class="dice-num-btn" onclick="dicePredictNum(6)">6</button>
+        </div>
       </div>
     </div>
 
@@ -1898,6 +1996,149 @@ function showSummary() {
     badgesEarned === 5 ? 'ALL BADGES COLLECTED!' : 'Session Complete!';
 
   if (badgesEarned >= 3) spawnConfetti();
+}
+
+// ── Dice Game ────────────────────────────────────────────────────────────────
+var diceCurrentVal = 0;
+var diceStreak = 0;
+var diceBest = 0;
+var diceCorrectCount = 0;
+var diceTotalCount = 0;
+var diceRolling = false;
+
+var DICE_ROTATIONS = {
+  1: 'rotateX(0deg) rotateY(0deg)',
+  2: 'rotateX(0deg) rotateY(180deg)',
+  3: 'rotateX(0deg) rotateY(90deg)',
+  4: 'rotateX(0deg) rotateY(-90deg)',
+  5: 'rotateX(-90deg) rotateY(0deg)',
+  6: 'rotateX(90deg) rotateY(0deg)'
+};
+
+var DICE_MESSAGES_CORRECT = [
+  'Yes! You got it!', 'Spot on!', 'Brilliant guess!',
+  'You\'re on fire!', 'Nailed it!', 'Lucky guess... or skill?'
+];
+var DICE_MESSAGES_WRONG = [
+  'Not this time!', 'Unlucky!', 'So close!',
+  'Better luck next roll!', 'Oof, not quite!', 'Try again!'
+];
+var DICE_MESSAGES_EXACT = [
+  'EXACT NUMBER! Amazing!', 'Wow, you predicted it perfectly!',
+  'Incredible guess!', 'Are you psychic?!'
+];
+
+function showDiceGame() {
+  document.getElementById('chooser').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('results-dashboard').className = 'results-dashboard';
+  document.getElementById('dice-game').className = 'dice-game active';
+  diceCurrentVal = 0;
+  diceStreak = 0;
+  diceCorrectCount = 0;
+  diceTotalCount = 0;
+  updateDiceStats();
+  document.getElementById('dice-result').textContent = '';
+  document.getElementById('dice-result').className = 'dice-result';
+  document.getElementById('dice-subtitle').textContent = 'Roll the dice to start!';
+  document.getElementById('dice-controls').style.display = 'block';
+  document.getElementById('dice-predict').style.display = 'none';
+  document.getElementById('dice-roll-btn').disabled = false;
+}
+
+function hideDiceGame() {
+  document.getElementById('dice-game').className = 'dice-game';
+  showChooser();
+}
+
+function updateDiceStats() {
+  document.getElementById('dice-streak').textContent = diceStreak;
+  document.getElementById('dice-best').textContent = diceBest;
+  document.getElementById('dice-correct').textContent = diceCorrectCount;
+  document.getElementById('dice-total').textContent = diceTotalCount;
+}
+
+function diceRollFirst() {
+  if (diceRolling) return;
+  animateDiceRoll(function(val) {
+    diceCurrentVal = val;
+    document.getElementById('dice-subtitle').textContent = 'You rolled a ' + val + '! Now predict the next roll...';
+    document.getElementById('dice-controls').style.display = 'none';
+    document.getElementById('dice-predict').style.display = 'block';
+    setDicePredictEnabled(true);
+  });
+}
+
+function animateDiceRoll(callback) {
+  diceRolling = true;
+  var cube = document.getElementById('dice-cube');
+  cube.className = 'dice-cube rolling';
+  var val = Math.floor(Math.random() * 6) + 1;
+  setTimeout(function() {
+    cube.className = 'dice-cube';
+    cube.style.transform = DICE_ROTATIONS[val];
+    diceRolling = false;
+    if (callback) callback(val);
+  }, 850);
+}
+
+function setDicePredictEnabled(enabled) {
+  var btns = document.querySelectorAll('#dice-predict button');
+  for (var i = 0; i < btns.length; i++) btns[i].disabled = !enabled;
+}
+
+function dicePredictHLS(guess) {
+  if (diceRolling) return;
+  setDicePredictEnabled(false);
+  var prev = diceCurrentVal;
+  animateDiceRoll(function(val) {
+    diceTotalCount++;
+    diceCurrentVal = val;
+    var actual = val > prev ? 'higher' : val < prev ? 'lower' : 'same';
+    var won = guess === actual;
+    if (won) {
+      diceStreak++;
+      diceCorrectCount++;
+      if (diceStreak > diceBest) diceBest = diceStreak;
+      showDiceResult(pick(DICE_MESSAGES_CORRECT), 'correct', prev, val);
+    } else {
+      diceStreak = 0;
+      showDiceResult(pick(DICE_MESSAGES_WRONG) + ' It was ' + actual + '.', 'wrong', prev, val);
+    }
+    updateDiceStats();
+    document.getElementById('dice-subtitle').textContent = 'You rolled a ' + val + '! Predict the next roll...';
+    setDicePredictEnabled(true);
+  });
+}
+
+function dicePredictNum(num) {
+  if (diceRolling) return;
+  setDicePredictEnabled(false);
+  var prev = diceCurrentVal;
+  animateDiceRoll(function(val) {
+    diceTotalCount++;
+    diceCurrentVal = val;
+    if (val === num) {
+      diceStreak++;
+      diceCorrectCount++;
+      if (diceStreak > diceBest) diceBest = diceStreak;
+      showDiceResult(pick(DICE_MESSAGES_EXACT), 'exact', prev, val);
+    } else {
+      var actual = val > prev ? 'higher' : val < prev ? 'lower' : 'same';
+      diceStreak = 0;
+      showDiceResult(pick(DICE_MESSAGES_WRONG) + ' It was ' + val + ' (' + actual + ').', 'wrong', prev, val);
+    }
+    updateDiceStats();
+    document.getElementById('dice-subtitle').textContent = 'You rolled a ' + val + '! Predict the next roll...';
+    setDicePredictEnabled(true);
+  });
+}
+
+function showDiceResult(msg, type, prev, curr) {
+  var el = document.getElementById('dice-result');
+  el.textContent = msg;
+  el.className = 'dice-result ' + type + ' dice-bounce';
+  setTimeout(function() { el.className = 'dice-result ' + type; }, 300);
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

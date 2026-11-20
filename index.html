@@ -955,6 +955,16 @@
             <div class="chooser-label">County Clare & Ireland</div>
             <div class="chooser-desc" id="chooser-clare-count"></div>
           </button>
+          <button class="chooser-btn" onclick="chooseSubject('Computing')">
+            <div class="chooser-icon">💻</div>
+            <div class="chooser-label">Computing</div>
+            <div class="chooser-desc" id="chooser-computing-count"></div>
+          </button>
+          <button class="chooser-btn" onclick="chooseSubject('Science')">
+            <div class="chooser-icon">🔬</div>
+            <div class="chooser-label">Science</div>
+            <div class="chooser-desc" id="chooser-science-count"></div>
+          </button>
           <button class="chooser-btn" onclick="chooseSubject('Mix')">
             <div class="chooser-icon">🎲</div>
             <div class="chooser-label">Pick &amp; Mix</div>
@@ -1255,6 +1265,20 @@ var GREETINGS_CLARE_IRELAND = [
   'Let\'s explore the Banner County!',
   'Time to discover Ireland!',
   'Ready for a trip to the Emerald Isle?',
+];
+var GREETINGS_COMPUTING = [
+  'Time to code, Alannah!',
+  'Let\'s explore the digital world!',
+  'Ready to think like a computer?',
+  'Debug mode: ON! Let\'s go!',
+  'Ctrl+Alt+Awesome — that\'s you!',
+];
+var GREETINGS_SCIENCE = [
+  'Lab coats on, Alannah!',
+  'Let\'s discover how the world works!',
+  'Science superstar time!',
+  'Ready to experiment and explore?',
+  'Hypothesis: Alannah will smash this!',
 ];
 
 var ANIMAL_EMOJI = {
@@ -1662,6 +1686,10 @@ function showChooser() {
   document.getElementById('chooser-african-count').textContent = africanCount > 0 ? africanCount + ' questions' : 'Coming soon!';
   var clareCount = allQuestions.filter(function(q) { return q.topic === 'County Clare & Ireland'; }).length;
   document.getElementById('chooser-clare-count').textContent = clareCount > 0 ? clareCount + ' questions' : 'Coming soon!';
+  var computingCount = allQuestions.filter(function(q) { return q.subject === 'Computing'; }).length;
+  document.getElementById('chooser-computing-count').textContent = computingCount > 0 ? computingCount + ' questions' : 'Coming soon!';
+  var scienceCount = allQuestions.filter(function(q) { return q.subject === 'Science'; }).length;
+  document.getElementById('chooser-science-count').textContent = scienceCount > 0 ? scienceCount + ' questions' : 'Coming soon!';
   document.getElementById('chooser-mix-count').textContent = allQuestions.length + ' questions';
   document.getElementById('greeting').textContent = 'Welcome back, Alannah! ' + allQuestions.length + ' questions ready.';
   document.getElementById('chooser').style.display = 'block';
@@ -1671,7 +1699,7 @@ function showChooser() {
 
 function chooseSubject(subj) {
   chosenSubject = subj;
-  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Decisions' ? GREETINGS_DECISIONS : subj === 'African Animals' ? GREETINGS_AFRICAN_ANIMALS : subj === 'County Clare & Ireland' ? GREETINGS_CLARE_IRELAND : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
+  var greetings = subj === 'English' ? GREETINGS_ENGLISH : subj === 'Humanities' ? GREETINGS_HUMANITIES : subj === 'French' ? GREETINGS_FRENCH : subj === 'Music' ? GREETINGS_MUSIC : subj === '11+' ? GREETINGS_11PLUS : subj === 'Decisions' ? GREETINGS_DECISIONS : subj === 'African Animals' ? GREETINGS_AFRICAN_ANIMALS : subj === 'County Clare & Ireland' ? GREETINGS_CLARE_IRELAND : subj === 'Computing' ? GREETINGS_COMPUTING : subj === 'Science' ? GREETINGS_SCIENCE : subj === 'Mix' ? GREETINGS_MIX : GREETINGS_MATHS;
   var pool = subj === 'Mix' ? allQuestions : (subj === 'African Animals' || subj === 'County Clare & Ireland') ? allQuestions.filter(function(q) { return q.topic === subj; }) : allQuestions.filter(function(q) { return q.subject === subj; });
   if (pool.length === 0) {
     document.getElementById('greeting').textContent = 'No ' + subj + ' questions yet — try another subject!';
@@ -1854,7 +1882,7 @@ function startSession() {
   } else {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
-    var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities' || chosenSubject === 'African Animals' || chosenSubject === 'County Clare & Ireland') ? 10 : 20;
+    var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities' || chosenSubject === 'African Animals' || chosenSubject === 'County Clare & Ireland' || chosenSubject === 'Computing' || chosenSubject === 'Science') ? 10 : 20;
     sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
   }
 

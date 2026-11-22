@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alannah Always Learns More!</title>
+<title>MonkeyBananas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FFD54F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MonkeyBananas">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
   :root {
     --bg: #faf5ff;
@@ -965,9 +972,135 @@
   .lesson-viewer { display: none; max-width: 720px; margin: 0 auto; padding: 0 16px; }
   .lesson-viewer.active { display: block; }
   .lesson-viewer-content { margin-top: 12px; }
+
+  /* Cover / splash screen */
+  .cover {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #fff8e1 0%, #ffecb3 30%, #ffe082 60%, #ffd54f 100%);
+    cursor: pointer;
+    overflow: hidden;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .cover.exit {
+    opacity: 0;
+    transform: scale(1.1);
+    pointer-events: none;
+  }
+  .cover-bg-banana {
+    position: absolute;
+    font-size: 3rem;
+    opacity: 0.12;
+    animation: cover-float 18s linear infinite;
+    pointer-events: none;
+    user-select: none;
+  }
+  @keyframes cover-float {
+    0%   { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-20vh) rotate(360deg); }
+  }
+  .cover-monkey {
+    font-size: 5rem;
+    animation: cover-bounce 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes cover-bounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-18px) rotate(3deg); }
+  }
+  .cover-title {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .cover-title .monkey-word {
+    background: linear-gradient(135deg, #6d4c41, #8d6e63);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+  .cover-title .banana-word {
+    background: linear-gradient(135deg, #f9a825, #ff8f00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+  .cover-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #8d6e63;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: cover-fade-in 0.8s ease 0.5s forwards;
+  }
+  .cover-tap {
+    font-size: 0.85rem;
+    color: #a1887f;
+    margin-top: 32px;
+    position: relative;
+    z-index: 1;
+    animation: cover-pulse 2s ease-in-out infinite;
+  }
+  @keyframes cover-fade-in {
+    to { opacity: 1; }
+  }
+  @keyframes cover-pulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
+  .cover-vine {
+    position: absolute;
+    top: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, #66bb6a, #43a047);
+    border-radius: 0 0 4px 4px;
+    z-index: 0;
+  }
+  .cover-leaf {
+    position: absolute;
+    font-size: 1.6rem;
+    z-index: 0;
+    opacity: 0.4;
+  }
 </style>
 </head>
 <body>
+
+<div class="cover" id="cover" onclick="enterApp()">
+  <div class="cover-vine" style="left:12%;height:40%"></div>
+  <div class="cover-vine" style="right:15%;height:55%"></div>
+  <div class="cover-leaf" style="top:8%;left:10%">🌿</div>
+  <div class="cover-leaf" style="top:18%;right:12%">🍃</div>
+  <div class="cover-leaf" style="bottom:20%;left:8%">🌿</div>
+  <div class="cover-bg-banana" style="left:10%;animation-delay:0s">🍌</div>
+  <div class="cover-bg-banana" style="left:30%;animation-delay:-4s;font-size:2.4rem">🍌</div>
+  <div class="cover-bg-banana" style="left:55%;animation-delay:-9s">🍌</div>
+  <div class="cover-bg-banana" style="left:75%;animation-delay:-13s;font-size:2rem">🍌</div>
+  <div class="cover-bg-banana" style="left:90%;animation-delay:-6s;font-size:2.6rem">🍌</div>
+  <div class="cover-monkey">🐒</div>
+  <div class="cover-title">
+    <span class="monkey-word">MONKEY</span>
+    <span class="banana-word">BANANAS</span>
+  </div>
+  <div class="cover-subtitle">Alannah's Learning Adventure</div>
+  <div class="cover-tap">tap anywhere to start</div>
+</div>
 
 <div class="container">
   <header>
@@ -1254,6 +1387,12 @@
 </div>
 
 <script>
+function enterApp() {
+  var cover = document.getElementById('cover');
+  cover.classList.add('exit');
+  setTimeout(function() { cover.style.display = 'none'; }, 600);
+}
+
 var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_O1iVCN-GtZ1KHCPQSOlTLztUXeOFDddV2qq-R_veuosy4nUuDG1u_MnoDONRFCypCZa2Wj8q3UZ3/pub?output=csv';
 
 // SET THESE AFTER GOOGLE APPS SCRIPT SETUP:

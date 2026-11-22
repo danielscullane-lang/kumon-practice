@@ -2598,6 +2598,58 @@ LESSON_SCRIPT['clouds'] = function() {
     2: ['cl-stratus-main', 'cl-stratus-haze'],
     3: ['cl-cb-anvil', 'cl-cb-tower', 'cl-cb-rain']
   };
+  var allIds = ['cl-cirrus', 'cl-cumulus', 'cl-stratus-main', 'cl-stratus-haze', 'cl-cb-anvil', 'cl-cb-tower', 'cl-cb-rain'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-cl-prev-step');
+  var nextStepBtn = document.getElementById('aal-cl-next-step');
+  var stepCount = document.getElementById('aal-cl-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('cl-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Cloud ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart clouds ↺' : 'Next cloud ▶';
+    clearHighlight();
+    (cloudGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('cl-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-cl-def');
+  root.querySelectorAll('#aal-cl-tags .aal-cl-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-cl-tags .aal-cl-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-cl-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['weather-seasons'] = function() {
   var root = document.getElementById('aal-ws-root');
@@ -2630,6 +2682,81 @@ LESSON_SCRIPT['weather-seasons'] = function() {
     2: ['ws-leaves', 'ws-tree1', 'ws-tree2'],
     3: ['ws-snow']
   };
+  var allIds = ['ws-sun', 'ws-sun-core', 'ws-sun-arc', 'ws-ground', 'ws-hill', 'ws-tree1', 'ws-tree2', 'ws-flowers', 'ws-rain', 'ws-snow', 'ws-leaves'];
+  var seasonColors = {
+    0: { ground: '#86efac', hill: '#4ade80', treeFill: '#22c55e', sunY: 100 },
+    1: { ground: '#86efac', hill: '#4ade80', treeFill: '#16a34a', sunY: 55 },
+    2: { ground: '#d4a76a', hill: '#b8944a', treeFill: '#ea580c', sunY: 130 },
+    3: { ground: '#e2e8f0', hill: '#cbd5e1', treeFill: '#94a3b8', sunY: 170 }
+  };
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-ws-prev-step');
+  var nextStepBtn = document.getElementById('aal-ws-next-step');
+  var stepCount = document.getElementById('aal-ws-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('ws-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Season ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart seasons ↺' : 'Next season ▶';
+    clearHighlight();
+    var c = seasonColors[stepIndex];
+    var ground = document.getElementById('ws-ground');
+    var hill = document.getElementById('ws-hill');
+    if (ground) ground.setAttribute('fill', c.ground);
+    if (hill) hill.setAttribute('fill', c.hill);
+    var sun = document.getElementById('ws-sun');
+    var sunCore = document.getElementById('ws-sun-core');
+    if (sun) { sun.setAttribute('cy', c.sunY); sun.style.opacity = '1'; sun.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    if (sunCore) { sunCore.setAttribute('cy', c.sunY); sunCore.style.opacity = '1'; }
+    ['ws-tree1', 'ws-tree2'].forEach(function(id) {
+      var g = document.getElementById(id);
+      if (g) {
+        g.style.opacity = '1';
+        var leaf = g.querySelector('ellipse');
+        if (leaf) leaf.setAttribute('fill', c.treeFill);
+      }
+    });
+    (seasonGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; }
+    });
+    var labels = document.getElementById('ws-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-ws-def');
+  root.querySelectorAll('#aal-ws-tags .aal-ws-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-ws-tags .aal-ws-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-ws-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['wind-pressure'] = function() {
   var root = document.getElementById('aal-wp-root');
@@ -2662,6 +2789,58 @@ LESSON_SCRIPT['wind-pressure'] = function() {
     2: ['wp-high', 'wp-low', 'wp-wind-arrows', 'wp-warm-arrows', 'wp-cold-arrows'],
     3: ['wp-scale', 'wp-wind-arrows']
   };
+  var allIds = ['wp-sun', 'wp-sun-core', 'wp-warm-arrows', 'wp-cold-arrows', 'wp-wind-arrows', 'wp-high', 'wp-low', 'wp-land', 'wp-scale'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-wp-prev-step');
+  var nextStepBtn = document.getElementById('aal-wp-next-step');
+  var stepCount = document.getElementById('aal-wp-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('wp-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Idea ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart ideas ↺' : 'Next idea ▶';
+    clearHighlight();
+    (ideaGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('wp-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-wp-def');
+  root.querySelectorAll('#aal-wp-tags .aal-wp-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-wp-tags .aal-wp-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-wp-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['rainbows-light'] = function() {
   var root = document.getElementById('aal-rl-root');
@@ -2694,6 +2873,58 @@ LESSON_SCRIPT['rainbows-light'] = function() {
     2: ['rl-drop', 'rl-spectrum'],
     3: ['rl-arc', 'rl-arc2']
   };
+  var allIds = ['rl-sun', 'rl-beam', 'rl-drop', 'rl-spectrum', 'rl-arc', 'rl-arc2'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-rl-prev-step');
+  var nextStepBtn = document.getElementById('aal-rl-next-step');
+  var stepCount = document.getElementById('aal-rl-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('rl-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Step ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart steps ↺' : 'Next step ▶';
+    clearHighlight();
+    (stepGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('rl-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-rl-def');
+  root.querySelectorAll('#aal-rl-tags .aal-rl-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-rl-tags .aal-rl-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-rl-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['states-matter'] = function() {
   var root = document.getElementById('aal-sm-root');
@@ -2726,6 +2957,58 @@ LESSON_SCRIPT['states-matter'] = function() {
     2: ['sm-gas'],
     3: ['sm-arrows']
   };
+  var allIds = ['sm-solid', 'sm-liquid', 'sm-gas', 'sm-arrows'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-sm-prev-step');
+  var nextStepBtn = document.getElementById('aal-sm-next-step');
+  var stepCount = document.getElementById('aal-sm-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('sm-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'State ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart states ↺' : 'Next state ▶';
+    clearHighlight();
+    (stateGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('sm-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-sm-def');
+  root.querySelectorAll('#aal-sm-tags .aal-sm-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-sm-tags .aal-sm-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-sm-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['plants-water'] = function() {
   var root = document.getElementById('aal-pw-root');
@@ -2758,6 +3041,58 @@ LESSON_SCRIPT['plants-water'] = function() {
     2: ['pw-leaves', 'pw-sun'],
     3: ['pw-vapour', 'pw-leaves']
   };
+  var allIds = ['pw-roots', 'pw-water-dots', 'pw-soil', 'pw-stem', 'pw-arrows', 'pw-leaves', 'pw-sun', 'pw-vapour'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-pw-prev-step');
+  var nextStepBtn = document.getElementById('aal-pw-next-step');
+  var stepCount = document.getElementById('aal-pw-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('pw-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Step ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart steps ↺' : 'Next step ▶';
+    clearHighlight();
+    (stepGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('pw-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-pw-def');
+  root.querySelectorAll('#aal-pw-tags .aal-pw-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-pw-tags .aal-pw-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-pw-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['rivers-oceans'] = function() {
   var root = document.getElementById('aal-ro-root');
@@ -2790,6 +3125,58 @@ LESSON_SCRIPT['rivers-oceans'] = function() {
     2: ['ro-estuary'],
     3: ['ro-ocean', 'ro-currents']
   };
+  var allIds = ['ro-source', 'ro-river', 'ro-erosion', 'ro-valley', 'ro-estuary', 'ro-ocean', 'ro-currents'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-ro-prev-step');
+  var nextStepBtn = document.getElementById('aal-ro-next-step');
+  var stepCount = document.getElementById('aal-ro-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('ro-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Part ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart parts ↺' : 'Next part ▶';
+    clearHighlight();
+    (stepGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('ro-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-ro-def');
+  root.querySelectorAll('#aal-ro-tags .aal-ro-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-ro-tags .aal-ro-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-ro-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['rocks-soil'] = function() {
   var root = document.getElementById('aal-rs-root');
@@ -2822,6 +3209,58 @@ LESSON_SCRIPT['rocks-soil'] = function() {
     2: ['rs-soil', 'rs-roots', 'rs-grass'],
     3: ['rs-sedimentary', 'rs-fossil']
   };
+  var allIds = ['rs-igneous', 'rs-sedimentary', 'rs-metamorphic', 'rs-weathering', 'rs-soil', 'rs-roots', 'rs-grass', 'rs-fossil', 'rs-sky', 'rs-sun', 'rs-tree1', 'rs-tree2'];
+  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
+  var prevStep = document.getElementById('aal-rs-prev-step');
+  var nextStepBtn = document.getElementById('aal-rs-next-step');
+  var stepCount = document.getElementById('aal-rs-step-count');
+  var stepIndex = 0;
+  function clearHighlight() {
+    allIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = ''; el.style.filter = ''; }
+    });
+    var labels = document.getElementById('rs-labels');
+    if (labels) labels.style.opacity = '';
+  }
+  function showStep(i) {
+    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
+    stepCount.textContent = 'Layer ' + (stepIndex + 1) + ' of 4';
+    prevStep.disabled = (stepIndex === 0);
+    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart layers ↺' : 'Next layer ▶';
+    clearHighlight();
+    (layerGroups[stepIndex] || []).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
+    });
+    var labels = document.getElementById('rs-labels');
+    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
+  }
+  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
+  nextStepBtn.addEventListener('click', function() {
+    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
+  });
+  showStep(0);
+  var defBox = document.getElementById('aal-rs-def');
+  root.querySelectorAll('#aal-rs-tags .aal-rs-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      root.querySelectorAll('#aal-rs-tags .aal-rs-tag').forEach(function(t) { t.classList.remove('selected'); });
+      tag.classList.add('selected');
+      defBox.textContent = tag.getAttribute('data-def');
+      defBox.hidden = false;
+    });
+  });
+  root.querySelectorAll('[data-think]').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function() {
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.querySelector('.aal-rs-think-a').hidden = open;
+    });
+  });
+  show(0);
+};
 
 LESSON_SCRIPT['word-detective'] = function() {
   var root = document.getElementById('aal-nv-root');
@@ -2929,60 +3368,6 @@ LESSON_SCRIPT['word-detective'] = function() {
     });
   });
   
-  show(0);
-};
-
-
-  var allIds = ['cl-cirrus', 'cl-cumulus', 'cl-stratus-main', 'cl-stratus-haze', 'cl-cb-anvil', 'cl-cb-tower', 'cl-cb-rain'];
-  var steps = Array.prototype.slice.call(root.querySelectorAll('[data-step]'));
-  var prevStep = document.getElementById('aal-cl-prev-step');
-  var nextStepBtn = document.getElementById('aal-cl-next-step');
-  var stepCount = document.getElementById('aal-cl-step-count');
-  var stepIndex = 0;
-  function clearHighlight() {
-    allIds.forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) { el.style.opacity = ''; el.style.filter = ''; }
-    });
-    var labels = document.getElementById('cl-labels');
-    if (labels) labels.style.opacity = '';
-  }
-  function showStep(i) {
-    stepIndex = Math.max(0, Math.min(i, steps.length - 1));
-    steps.forEach(function(s, k) { s.hidden = (k !== stepIndex); });
-    stepCount.textContent = 'Cloud ' + (stepIndex + 1) + ' of 4';
-    prevStep.disabled = (stepIndex === 0);
-    nextStepBtn.textContent = (stepIndex === steps.length - 1) ? 'Restart clouds ↺' : 'Next cloud ▶';
-    clearHighlight();
-    (cloudGroups[stepIndex] || []).forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) { el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 6px #ec4899)'; }
-    });
-    var labels = document.getElementById('cl-labels');
-    if (labels && stepIndex === steps.length - 1) labels.style.opacity = '1';
-  }
-  prevStep.addEventListener('click', function() { showStep(stepIndex - 1); });
-  nextStepBtn.addEventListener('click', function() {
-    if (stepIndex === steps.length - 1) showStep(0); else showStep(stepIndex + 1);
-  });
-  showStep(0);
-  var defBox = document.getElementById('aal-cl-def');
-  root.querySelectorAll('#aal-cl-tags .aal-cl-tag').forEach(function(tag) {
-    tag.addEventListener('click', function() {
-      root.querySelectorAll('#aal-cl-tags .aal-cl-tag').forEach(function(t) { t.classList.remove('selected'); });
-      tag.classList.add('selected');
-      defBox.textContent = tag.getAttribute('data-def');
-      defBox.hidden = false;
-    });
-  });
-  root.querySelectorAll('[data-think]').forEach(function(btn) {
-    btn.setAttribute('aria-expanded', 'false');
-    btn.addEventListener('click', function() {
-      var open = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-      btn.querySelector('.aal-cl-think-a').hidden = open;
-    });
-  });
   show(0);
 };
 

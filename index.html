@@ -898,29 +898,68 @@
   .dice-bounce { animation: diceBounce 0.3s ease; }
 
   /* ── Lessons Library ────────────────────────────────────────── */
-  .lessons-banner {
+  .section-banner {
     display: block;
     width: 100%;
     max-width: 540px;
-    margin: 20px auto 0;
+    margin: 12px auto 0;
     padding: 18px 24px;
     border: none;
     border-radius: 14px;
-    background: linear-gradient(135deg, #10b981, #0ea5e9);
     color: #fff;
     font-family: inherit;
     font-size: 1.15rem;
     font-weight: 800;
     text-align: center;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
     transition: transform 0.15s, box-shadow 0.15s;
     letter-spacing: 0.02em;
   }
-  .lessons-banner:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4); }
-  .lessons-banner:active { transform: translateY(1px); }
-  .lessons-banner-icon { font-size: 1.4rem; margin-right: 8px; }
-  .lessons-banner-sub { display: block; font-size: 0.8rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+  .section-banner:hover { transform: translateY(-3px); }
+  .section-banner:active { transform: translateY(1px); }
+  .section-banner-icon { font-size: 1.4rem; margin-right: 8px; }
+  .section-banner-sub { display: block; font-size: 0.8rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+  .banner-learn {
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  }
+  .banner-learn:hover { box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4); }
+  .banner-test {
+    background: linear-gradient(135deg, #f59e0b, #f43f5e);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  }
+  .banner-test:hover { box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4); }
+
+  /* PIN screen */
+  .pin-gate {
+    position: fixed; inset: 0; z-index: 10000;
+    background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .pin-gate.exit { animation: cover-exit 0.5s ease forwards; }
+  .pin-gate h2 { font-size: 2rem; font-weight: 800; color: #5d4037; margin-bottom: 8px; }
+  .pin-gate p { color: #795548; font-weight: 600; margin-bottom: 20px; }
+  .pin-dots { display: flex; gap: 12px; margin-bottom: 20px; }
+  .pin-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 3px solid #5d4037; background: transparent;
+    transition: background 0.15s;
+  }
+  .pin-dot.filled { background: #5d4037; }
+  .pin-pad {
+    display: grid; grid-template-columns: repeat(3, 72px); gap: 10px;
+  }
+  .pin-btn {
+    width: 72px; height: 72px; border-radius: 50%; border: 3px solid #5d4037;
+    background: rgba(255,255,255,0.3); color: #5d4037;
+    font-size: 1.6rem; font-weight: 800; font-family: inherit;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .pin-btn:hover { background: rgba(255,255,255,0.5); }
+  .pin-btn:active { transform: scale(0.9); }
+  .pin-btn.wide { grid-column: span 2; width: auto; border-radius: 36px; font-size: 1rem; }
+  .pin-error { color: #d32f2f; font-weight: 800; min-height: 24px; margin-top: 12px; }
 
   .lessons-library { display: none; max-width: 720px; margin: 0 auto; padding: 0 16px; }
   .lessons-library.active { display: block; }
@@ -1082,7 +1121,32 @@
 </head>
 <body>
 
-<div class="cover" id="cover" onclick="enterApp()">
+<div class="pin-gate" id="pin-gate">
+  <h2>🔒 MonkeyBananas</h2>
+  <p>Enter your secret code</p>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="pin-dot-0"></div>
+    <div class="pin-dot" id="pin-dot-1"></div>
+    <div class="pin-dot" id="pin-dot-2"></div>
+    <div class="pin-dot" id="pin-dot-3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn wide" onclick="pinClear()">Clear</button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<div class="cover" id="cover" onclick="enterApp()" style="display:none">
   <div class="cover-vine" style="left:12%;height:40%"></div>
   <div class="cover-vine" style="right:15%;height:55%"></div>
   <div class="cover-leaf" style="top:8%;left:10%">🌿</div>
@@ -1117,77 +1181,83 @@
     <!-- Subject chooser -->
     <div id="chooser" style="display:none">
       <div class="chooser">
-        <p class="chooser-title">What would you like to practise today?</p>
-        <div class="chooser-grid">
-          <button class="chooser-btn" onclick="chooseSubject('Maths')">
-            <div class="chooser-icon">🔢</div>
-            <div class="chooser-label">Maths</div>
-            <div class="chooser-desc" id="chooser-maths-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('English')">
-            <div class="chooser-icon">📖</div>
-            <div class="chooser-label">English</div>
-            <div class="chooser-desc" id="chooser-english-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Humanities')">
-            <div class="chooser-icon">🌍</div>
-            <div class="chooser-label">Humanities</div>
-            <div class="chooser-desc" id="chooser-humanities-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('French')">
-            <div class="chooser-icon"><svg width="48" height="32" viewBox="0 0 48 32" style="border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.15)"><rect width="16" height="32" fill="#002395"/><rect x="16" width="16" height="32" fill="#fff"/><rect x="32" width="16" height="32" fill="#ED2939"/></svg></div>
-            <div class="chooser-label">French</div>
-            <div class="chooser-desc" id="chooser-french-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Music')">
-            <div class="chooser-icon">🎵</div>
-            <div class="chooser-label">Music</div>
-            <div class="chooser-desc" id="chooser-music-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('11+')">
-            <div class="chooser-icon">🎓</div>
-            <div class="chooser-label">11+</div>
-            <div class="chooser-desc" id="chooser-11plus-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Decisions')">
-            <div class="chooser-icon">⚖️</div>
-            <div class="chooser-label">Decisions</div>
-            <div class="chooser-desc" id="chooser-decisions-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('African Animals')">
-            <div class="chooser-icon">🦁</div>
-            <div class="chooser-label">African Animals</div>
-            <div class="chooser-desc" id="chooser-african-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('County Clare & Ireland')">
-            <div class="chooser-icon"><svg width="48" height="51" viewBox="0 0 48 51" style="overflow:visible"><rect width="16" height="23" rx="2" ry="2" fill="#169B62"/><rect x="16" width="16" height="23" fill="#fff"/><rect x="32" width="16" height="23" rx="2" ry="2" fill="#FF883E"/><rect x="16" width="16" height="23" fill="#fff"/><rect y="28" width="24" height="23" rx="2" ry="2" fill="#1C3F94"/><rect x="24" y="28" width="24" height="23" rx="2" ry="2" fill="#F4B731"/><rect width="48" height="23" rx="3" ry="3" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="1"/><rect y="28" width="48" height="23" rx="3" ry="3" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="1"/></svg></div>
-            <div class="chooser-label">County Clare & Ireland</div>
-            <div class="chooser-desc" id="chooser-clare-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Computing')">
-            <div class="chooser-icon">💻</div>
-            <div class="chooser-label">Computing</div>
-            <div class="chooser-desc" id="chooser-computing-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Science')">
-            <div class="chooser-icon">🔬</div>
-            <div class="chooser-label">Science</div>
-            <div class="chooser-desc" id="chooser-science-count"></div>
-          </button>
-          <button class="chooser-btn" onclick="chooseSubject('Mix')">
-            <div class="chooser-icon">🎲</div>
-            <div class="chooser-label">Pick &amp; Mix</div>
-            <div class="chooser-desc" id="chooser-mix-count"></div>
-          </button>
+        <button class="section-banner banner-learn" onclick="showLessons()">
+          <span class="section-banner-icon">📚</span> LEARNING TAKES PLACE HERE
+          <span class="section-banner-sub">Interactive lessons to explore</span>
+        </button>
+        <button class="section-banner banner-test" onclick="showTestChooser()">
+          <span class="section-banner-icon">🧠</span> TEST YOUR KNOWLEDGE
+          <span class="section-banner-sub">Pick a subject and prove what you know</span>
+        </button>
+        <div id="test-chooser" style="display:none">
+          <p class="chooser-title">What would you like to practise today?</p>
+          <div class="chooser-grid">
+            <button class="chooser-btn" onclick="chooseSubject('Maths')">
+              <div class="chooser-icon">🔢</div>
+              <div class="chooser-label">Maths</div>
+              <div class="chooser-desc" id="chooser-maths-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('English')">
+              <div class="chooser-icon">📖</div>
+              <div class="chooser-label">English</div>
+              <div class="chooser-desc" id="chooser-english-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Humanities')">
+              <div class="chooser-icon">🌍</div>
+              <div class="chooser-label">Humanities</div>
+              <div class="chooser-desc" id="chooser-humanities-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('French')">
+              <div class="chooser-icon"><svg width="48" height="32" viewBox="0 0 48 32" style="border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.15)"><rect width="16" height="32" fill="#002395"/><rect x="16" width="16" height="32" fill="#fff"/><rect x="32" width="16" height="32" fill="#ED2939"/></svg></div>
+              <div class="chooser-label">French</div>
+              <div class="chooser-desc" id="chooser-french-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Music')">
+              <div class="chooser-icon">🎵</div>
+              <div class="chooser-label">Music</div>
+              <div class="chooser-desc" id="chooser-music-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('11+')">
+              <div class="chooser-icon">🎓</div>
+              <div class="chooser-label">11+</div>
+              <div class="chooser-desc" id="chooser-11plus-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Decisions')">
+              <div class="chooser-icon">⚖️</div>
+              <div class="chooser-label">Decisions</div>
+              <div class="chooser-desc" id="chooser-decisions-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('African Animals')">
+              <div class="chooser-icon">🦁</div>
+              <div class="chooser-label">African Animals</div>
+              <div class="chooser-desc" id="chooser-african-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('County Clare & Ireland')">
+              <div class="chooser-icon"><svg width="48" height="51" viewBox="0 0 48 51" style="overflow:visible"><rect width="16" height="23" rx="2" ry="2" fill="#169B62"/><rect x="16" width="16" height="23" fill="#fff"/><rect x="32" width="16" height="23" rx="2" ry="2" fill="#FF883E"/><rect x="16" width="16" height="23" fill="#fff"/><rect y="28" width="24" height="23" rx="2" ry="2" fill="#1C3F94"/><rect x="24" y="28" width="24" height="23" rx="2" ry="2" fill="#F4B731"/><rect width="48" height="23" rx="3" ry="3" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="1"/><rect y="28" width="48" height="23" rx="3" ry="3" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="1"/></svg></div>
+              <div class="chooser-label">County Clare & Ireland</div>
+              <div class="chooser-desc" id="chooser-clare-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Computing')">
+              <div class="chooser-icon">💻</div>
+              <div class="chooser-label">Computing</div>
+              <div class="chooser-desc" id="chooser-computing-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Science')">
+              <div class="chooser-icon">🔬</div>
+              <div class="chooser-label">Science</div>
+              <div class="chooser-desc" id="chooser-science-count"></div>
+            </button>
+            <button class="chooser-btn" onclick="chooseSubject('Mix')">
+              <div class="chooser-icon">🎲</div>
+              <div class="chooser-label">Pick &amp; Mix</div>
+              <div class="chooser-desc" id="chooser-mix-count"></div>
+            </button>
+          </div>
         </div>
         <div style="display:flex;justify-content:center;gap:24px;margin-top:20px">
           <a class="results-link" onclick="showResults()" style="margin:0">📊 My Results</a>
           <a class="results-link" onclick="showDiceGame()" style="margin:0">🎲 Dice Game</a>
         </div>
-        <button class="lessons-banner" onclick="showLessons()">
-          <span class="lessons-banner-icon">📚</span> LEARNING TAKES PLACE HERE
-          <span class="lessons-banner-sub">Interactive lessons to explore</span>
-        </button>
       </div>
     </div>
 
@@ -1387,10 +1457,49 @@
 </div>
 
 <script>
+var PIN_CODE = '2019';
+var pinEntry = '';
+
+function pinPress(digit) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += digit;
+  for (var i = 0; i < 4; i++) {
+    document.getElementById('pin-dot-' + i).className = i < pinEntry.length ? 'pin-dot filled' : 'pin-dot';
+  }
+  if (pinEntry.length === 4) {
+    if (pinEntry === PIN_CODE) {
+      document.getElementById('pin-error').textContent = '';
+      var gate = document.getElementById('pin-gate');
+      gate.classList.add('exit');
+      setTimeout(function() {
+        gate.style.display = 'none';
+        document.getElementById('cover').style.display = '';
+      }, 500);
+    } else {
+      document.getElementById('pin-error').textContent = 'Wrong code — try again!';
+      pinEntry = '';
+      setTimeout(function() {
+        for (var i = 0; i < 4; i++) document.getElementById('pin-dot-' + i).className = 'pin-dot';
+      }, 300);
+    }
+  }
+}
+
+function pinClear() {
+  pinEntry = '';
+  for (var i = 0; i < 4; i++) document.getElementById('pin-dot-' + i).className = 'pin-dot';
+  document.getElementById('pin-error').textContent = '';
+}
+
 function enterApp() {
   var cover = document.getElementById('cover');
   cover.classList.add('exit');
   setTimeout(function() { cover.style.display = 'none'; }, 600);
+}
+
+function showTestChooser() {
+  var el = document.getElementById('test-chooser');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_O1iVCN-GtZ1KHCPQSOlTLztUXeOFDddV2qq-R_veuosy4nUuDG1u_MnoDONRFCypCZa2Wj8q3UZ3/pub?output=csv';
@@ -1691,21 +1800,30 @@ async function fetchRemoteHistory() {
     var text = await res.text();
     var rows = parseCSV(text);
     if (rows.length < 2) return;
+    var added = 0;
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
       if (!row[0]) continue;
-      var exists = practiceHistory.some(function(h) { return h.date === row[0] && h.time === row[1]; });
+      var exists = practiceHistory.some(function(h) {
+        return h.date === row[0] && h.time === row[1] && h.mode === row[2];
+      });
       if (!exists) {
         practiceHistory.push({
           date: row[0], time: row[1], mode: row[2],
           correct: parseInt(row[3]) || 0, wrong: parseInt(row[4]) || 0,
           score: parseInt(row[5]) || 0, badges: parseInt(row[6]) || 0,
-          questions: parseInt(row[7]) || 0
+          questions: parseInt(row[7]) || 0, rating: row[8] || ''
         });
+        added++;
       }
     }
-    saveHistory();
-    updateAlltimeStats();
+    if (added > 0) {
+      practiceHistory.sort(function(a, b) {
+        return (a.date + a.time).localeCompare(b.date + b.time);
+      });
+      saveHistory();
+      updateAlltimeStats();
+    }
   } catch(e) {}
 }
 
@@ -1932,6 +2050,7 @@ function showChooser() {
   document.getElementById('chooser').style.display = 'block';
   document.getElementById('main').style.display = 'none';
   document.getElementById('results-dashboard').className = 'results-dashboard';
+  document.getElementById('test-chooser').style.display = 'none';
 }
 
 function chooseSubject(subj) {

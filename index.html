@@ -1763,19 +1763,23 @@ function flushResultQueue() {
   if (!SCRIPT_URL) return;
   var queue = getResultQueue();
   if (queue.length === 0) return;
-  var remaining = [];
-  var sending = queue.slice();
   setResultQueue([]);
-  sending.forEach(function(record) {
+  var failed = [];
+  var pending = queue.length;
+  queue.forEach(function(record) {
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(record)
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
     }).catch(function() {
-      remaining.push(record);
-      setResultQueue(getResultQueue().concat(remaining));
-      remaining = [];
+      failed.push(record);
+    }).finally(function() {
+      pending--;
+      if (pending === 0 && failed.length > 0) {
+        setResultQueue(getResultQueue().concat(failed));
+      }
     });
   });
 }
@@ -1788,24 +1792,41 @@ function saveToSheet(record) {
     var q = getResultQueue();
     q.push(record);
     setResultQueue(q);
+    showSaveError('Offline — will sync when back online');
     return;
   }
   try {
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(record)
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    }).then(function() {
+      showSaveSuccess();
     }).catch(function() {
       var q = getResultQueue();
       q.push(record);
       setResultQueue(q);
+      showSaveError('Could not save to cloud — queued for retry');
     });
   } catch(e) {
     var q = getResultQueue();
     q.push(record);
     setResultQueue(q);
+    showSaveError('Could not save to cloud — queued for retry');
   }
+}
+
+function showSaveSuccess() {
+  var el = document.getElementById('save-status');
+  if (el) { el.textContent = 'Saved to cloud ✓'; el.style.color = 'var(--success)'; }
+}
+
+function showSaveError(msg) {
+  var el = document.getElementById('save-status');
+  if (el) { el.textContent = msg; el.style.color = 'var(--danger)'; }
 }
 
 var sessionRating = '';
@@ -1929,6 +1950,7 @@ function showResults() {
   document.getElementById('chooser').style.display = 'none';
   document.getElementById('results-dashboard').className = 'results-dashboard active';
   renderResults();
+  fetchRemoteHistory().then(function() { renderResults(); });
 }
 
 function hideResults() {

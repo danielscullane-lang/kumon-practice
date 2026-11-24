@@ -1104,6 +1104,69 @@
     0%, 100% { opacity: 0.5; }
     50%      { opacity: 1; }
   }
+  .monkey-hug {
+    position: relative;
+    z-index: 1;
+  }
+  .monkey-hug .hug-monkey {
+    font-size: 5rem;
+    animation: hug-squeeze 2s ease-in-out infinite;
+  }
+  @keyframes hug-squeeze {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    15% { transform: scale(1.2) rotate(-5deg); }
+    30% { transform: scale(1.35) rotate(3deg); }
+    50% { transform: scale(1.3) rotate(-2deg); }
+    70% { transform: scale(1.25) rotate(2deg); }
+    85% { transform: scale(1.15) rotate(-1deg); }
+  }
+  .monkey-hug .hug-arms {
+    position: absolute;
+    font-size: 2.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: hug-arms-close 2s ease-in-out infinite;
+  }
+  .monkey-hug .hug-arms.left { left: -38px; }
+  .monkey-hug .hug-arms.right { right: -38px; }
+  @keyframes hug-arms-close {
+    0%, 100% { opacity: 0.7; transform: translateY(-50%) scaleX(1); }
+    30% { opacity: 1; transform: translateY(-50%) scaleX(-1) translateX(10px); }
+    50% { opacity: 1; transform: translateY(-50%) scaleX(-1) translateX(14px); }
+    70% { opacity: 1; transform: translateY(-50%) scaleX(-1) translateX(10px); }
+  }
+  .monkey-hug .hug-hearts {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+  .monkey-hug .hug-heart {
+    font-size: 1.4rem;
+    animation: hug-heart-float 2.5s ease-in-out infinite;
+    opacity: 0;
+  }
+  .monkey-hug .hug-heart:nth-child(1) { animation-delay: 0.3s; }
+  .monkey-hug .hug-heart:nth-child(2) { animation-delay: 0.7s; }
+  .monkey-hug .hug-heart:nth-child(3) { animation-delay: 1.1s; }
+  @keyframes hug-heart-float {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    20% { opacity: 1; transform: translateY(-10px) scale(1); }
+    80% { opacity: 0.8; transform: translateY(-30px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-45px) scale(0.6); }
+  }
+  .monkey-hug .hug-message {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #5d4037;
+    margin-top: 12px;
+    text-align: center;
+    animation: cover-fade-in 0.8s ease 0.3s forwards;
+    opacity: 0;
+  }
+
   .cover-vine {
     position: absolute;
     top: 0;
@@ -1475,6 +1538,7 @@ function pinPress(digit) {
       setTimeout(function() {
         gate.style.display = 'none';
         document.getElementById('cover').style.display = '';
+        maybeShowMonkeyHug();
       }, 500);
     } else {
       document.getElementById('pin-error').textContent = 'Wrong code — try again!';
@@ -1496,6 +1560,45 @@ function enterApp() {
   var cover = document.getElementById('cover');
   cover.classList.add('exit');
   setTimeout(function() { cover.style.display = 'none'; }, 600);
+}
+
+var HUG_MESSAGES = [
+  'Alannah, you are SO loved! 🤗',
+  'Big monkey hug for you, superstar!',
+  'You make the world brighter, Alannah!',
+  'The monkey believes in you! 💛',
+  'Squeeze! You\'re amazing, Alannah!',
+  'Hug attack! You\'re wonderful! 🐒💕'
+];
+
+function maybeShowMonkeyHug() {
+  if (Math.random() > 0.2) return;
+  var monkey = document.querySelector('.cover-monkey');
+  var subtitle = document.querySelector('.cover-subtitle');
+  var tap = document.querySelector('.cover-tap');
+  if (!monkey || !subtitle) return;
+
+  monkey.style.display = 'none';
+  subtitle.style.display = 'none';
+  tap.style.display = 'none';
+
+  var hug = document.createElement('div');
+  hug.className = 'monkey-hug';
+  hug.innerHTML =
+    '<div class="hug-hearts"><span class="hug-heart">❤️</span><span class="hug-heart">💛</span><span class="hug-heart">❤️</span></div>' +
+    '<span class="hug-arms left">🤲</span>' +
+    '<span class="hug-monkey">🐒</span>' +
+    '<span class="hug-arms right">🤲</span>' +
+    '<div class="hug-message">' + pick(HUG_MESSAGES) + '</div>';
+
+  monkey.parentNode.insertBefore(hug, monkey);
+
+  setTimeout(function() {
+    hug.remove();
+    monkey.style.display = '';
+    subtitle.style.display = '';
+    tap.style.display = '';
+  }, 6000);
 }
 
 function showTestChooser() {

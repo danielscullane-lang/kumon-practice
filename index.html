@@ -400,7 +400,8 @@
   }
   .btn-check:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
   .btn-skip { background: var(--primary-light); color: var(--primary); }
-  .btn-skip:hover { background: #ddd6fe; }
+  .btn-skip:hover:not(:disabled) { background: #ddd6fe; }
+  .btn-skip:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-next { background: linear-gradient(135deg, var(--success), #059669); color: white; display: none; }
   .btn-next:hover { transform: translateY(-1px); }
   .btn-save {
@@ -1656,6 +1657,60 @@ var sessionSaved = false;
 var practiceHistory = [];
 var chosenSubject = '';
 var practiceUsed = {};
+var skipsUsed = 0;
+var MAX_SKIPS = 3;
+
+// ── Mastery tracking ────────────────────────────────────────────────────────
+function getMasteryKey(q) { return q.subject + ':' + q.paper + ':' + q.qnum; }
+
+function loadMastery() {
+  try { return JSON.parse(localStorage.getItem('question-mastery') || '{}'); } catch(e) { return {}; }
+}
+
+function saveMastery(m) {
+  try { localStorage.setItem('question-mastery', JSON.stringify(m)); } catch(e) {}
+}
+
+function recordMastery(q, isCorrect) {
+  var m = loadMastery();
+  var key = getMasteryKey(q);
+  if (!m[key]) m[key] = { seen: 0, correct: 0, lastSeen: null };
+  m[key].seen++;
+  if (isCorrect) m[key].correct++;
+  m[key].lastSeen = new Date().toISOString().slice(0, 10);
+  saveMastery(m);
+}
+
+function smartSelect(pool, batchSize) {
+  var mastery = loadMastery();
+  var today = new Date().toISOString().slice(0, 10);
+  var scored = pool.map(function(q) {
+    var key = getMasteryKey(q);
+    var m = mastery[key];
+    if (!m) return { q: q, score: 0 };
+    var correctRate = m.seen > 0 ? m.correct / m.seen : 0;
+    var daysSince = m.lastSeen ? Math.floor((new Date(today) - new Date(m.lastSeen)) / 86400000) : 999;
+    // Higher score = lower priority (will be sorted to the end)
+    // Mastered questions (3+ correct, high rate) get a big penalty
+    var score = 0;
+    if (m.correct >= 3 && correctRate >= 0.8) score += 50;
+    // Recently seen questions get a moderate penalty
+    if (daysSince === 0) score += 30;
+    else if (daysSince <= 1) score += 15;
+    else if (daysSince <= 3) score += 5;
+    // Questions answered wrong get a bonus (negative = higher priority)
+    if (m.seen > 0 && correctRate < 0.5) score -= 20;
+    return { q: q, score: score };
+  });
+  // Sort by score ascending (lowest = highest priority), then shuffle within same score
+  scored.sort(function(a, b) {
+    if (a.score !== b.score) return a.score - b.score;
+    return Math.random() - 0.5;
+  });
+  var selected = scored.slice(0, batchSize).map(function(s) { return s.q; });
+  return shuffle(selected);
+}
+
 var PRACTICE_NUDGE = [
   'That\'s enough practice — time for the real thing! You\'ve got this!',
   'Practice done! Now show what you can do! I can do it, you can too!',
@@ -2220,6 +2275,7 @@ function getBadgeThresholds(total) {
 
 function startSession() {
   correct = 0; wrong = 0; streak = 0; answered = false; sessionSaved = false;
+  skipsUsed = 0;
   resetBadges();
   updateStreak();
 
@@ -2239,7 +2295,7 @@ function startSession() {
     var pool = getFiltered();
     if (!pool.length) pool = allQuestions;
     var batchSize = chosenSubject === 'Decisions' ? 5 : (chosenSubject === '11+' || chosenSubject === 'Humanities' || chosenSubject === 'African Animals' || chosenSubject === 'County Clare & Ireland' || chosenSubject === 'Computing' || chosenSubject === 'Science') ? 10 : 20;
-    sessionQueue = shuffle(pool.slice()).slice(0, batchSize);
+    sessionQueue = smartSelect(pool, batchSize);
   }
 
   sessionIndex = 0;
@@ -2363,12 +2419,22 @@ function showQuestion() {
 
   document.getElementById('feedback').style.display = 'none';
   document.getElementById('btn-next').style.display = 'none';
+  var skipBtn = document.querySelector('.btn-skip');
   if (mcqParsed) {
     document.querySelector('.btn-check').style.display = 'none';
-    document.querySelector('.btn-skip').style.display = 'none';
+    skipBtn.style.display = 'none';
   } else {
     document.querySelector('.btn-check').style.display = 'inline-block';
-    document.querySelector('.btn-skip').style.display = 'inline-block';
+    var skipsLeft = MAX_SKIPS - skipsUsed;
+    if (skipsLeft <= 0) {
+      skipBtn.style.display = 'inline-block';
+      skipBtn.disabled = true;
+      skipBtn.textContent = 'No skips left';
+    } else {
+      skipBtn.style.display = 'inline-block';
+      skipBtn.disabled = false;
+      skipBtn.textContent = 'Skip (' + skipsLeft + ')';
+    }
   }
 
   updateStats();
@@ -2417,6 +2483,7 @@ function checkAnswer() {
   var isCorrect = normaliseAnswer(userAns, correctAns);
 
   answered = true;
+  recordMastery(q, isCorrect);
   var inp = document.getElementById('answer-input');
   inp.className = 'answer-input ' + (isCorrect ? 'correct' : 'incorrect');
   inp.disabled = true;
@@ -2463,6 +2530,8 @@ function checkAnswer() {
 }
 
 function skipQuestion() {
+  if (skipsUsed >= MAX_SKIPS) return;
+  skipsUsed++;
   streak = 0;
   updateStreak();
   sessionIndex++;

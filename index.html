@@ -930,6 +930,30 @@
     box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
   }
   .banner-test:hover { box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4); }
+  .banner-deep {
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  }
+  .banner-deep:hover { box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4); }
+
+  /* ── Deep Learning Library ───────────────────────────────────── */
+  .deep-library { display: none; max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .deep-library.active { display: block; }
+  .deep-grid { display: flex; flex-direction: column; gap: 10px; }
+  .deep-card {
+    display: flex; align-items: center; gap: 14px;
+    background: #fff; border: 2px solid #e9d5ff; border-radius: 14px;
+    padding: 14px 16px; cursor: pointer; text-align: left;
+    font-family: inherit; color: #1e1b4b; width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .deep-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.15); border-color: #7c3aed; }
+  .deep-card-icon { font-size: 2rem; flex-shrink: 0; }
+  .deep-card-info { flex: 1; min-width: 0; }
+  .deep-card-title { font-weight: 800; font-size: 1.05rem; }
+  .deep-card-subject { font-weight: 700; font-size: 0.8rem; color: #7c3aed; margin-top: 2px; }
+  .deep-card-desc { font-weight: 600; font-size: 0.85rem; color: #6b7280; margin-top: 2px; }
+  .deep-card-arrow { font-size: 1.5rem; font-weight: 800; color: #c4b5fd; }
 
   /* PIN screen */
   .pin-gate {
@@ -1249,6 +1273,10 @@
           <span class="section-banner-icon">📚</span> LEARNING TAKES PLACE HERE
           <span class="section-banner-sub">Interactive lessons to explore</span>
         </button>
+        <button class="section-banner banner-deep" onclick="showDeepLearning()">
+          <span class="section-banner-icon">🔬</span> DEEP LEARNING IS HERE IF YOU DARE
+          <span class="section-banner-sub">Immersive adventures that go deeper</span>
+        </button>
         <button class="section-banner banner-test" onclick="showTestChooser()">
           <span class="section-banner-icon">🧠</span> TEST YOUR KNOWLEDGE
           <span class="section-banner-sub">Pick a subject and prove what you know</span>
@@ -1398,6 +1426,14 @@
       </div>
       <div class="lessons-count" id="lessons-count"></div>
       <div class="lessons-grid" id="lessons-grid"></div>
+    </div>
+
+    <!-- Deep Learning Library -->
+    <div id="deep-library" class="deep-library">
+      <button class="btn-back" onclick="hideDeepLearning()">&#8592; Back</button>
+      <h2 style="font-size:1.6rem;font-weight:800;color:#7c3aed;margin:0 0 4px;text-align:center">🔬 Deep Learning Is Here If You Dare</h2>
+      <p style="text-align:center;color:var(--muted);font-weight:600;margin:0 0 16px">Immersive adventures that take you deeper into a subject</p>
+      <div class="deep-grid" id="deep-grid"></div>
     </div>
 
     <!-- Lesson Viewer -->
@@ -2228,6 +2264,8 @@ function showChooser() {
   document.getElementById('chooser').style.display = 'block';
   document.getElementById('main').style.display = 'none';
   document.getElementById('results-dashboard').className = 'results-dashboard';
+  document.getElementById('deep-library').className = 'deep-library';
+  document.getElementById('lessons-library').className = 'lessons-library';
   document.getElementById('test-chooser').style.display = 'none';
 }
 
@@ -3169,14 +3207,6 @@ var LESSONS = [
     tags: ['humanities', 'history', 'explorers', 'discovery', 'voyages', 'navigation', 'columbus', 'shackleton', 'adventure']
   },
   {
-    id: 'food-chains',
-    title: 'Food Chains & Habitats',
-    icon: '\u{1F981}',
-    subject: 'Science',
-    desc: 'Producers, consumers, predators and prey: who eats whom in nature',
-    tags: ['science', 'biology', 'food chains', 'habitats', 'producers', 'consumers', 'predators', 'prey', 'ecosystem', 'energy']
-  },
-  {
     id: 'forces-motion',
     title: 'Forces and Motion',
     icon: '\u{1F4A8}',
@@ -3487,6 +3517,17 @@ var LESSONS = [
     subject: 'Maths',
     desc: 'Reading a problem, choosing the operation and solving it step by step',
     tags: ['maths', 'word problems', 'problem solving', 'operations', 'reading', 'strategy', 'reasoning']
+  }
+];
+
+var DEEP_LESSONS = [
+  {
+    id: 'food-chains',
+    title: 'Ranger of Sunny Meadow: Food Chains',
+    icon: '\u{1F981}',
+    subject: 'Science',
+    desc: 'Explore a meadow, build food chains, and discover what happens when nature goes wrong',
+    tags: ['science', 'biology', 'food chains', 'habitats', 'producers', 'consumers', 'predators', 'prey', 'ecosystem', 'energy']
   }
 ];
 
@@ -9409,12 +9450,81 @@ LESSON_SCRIPT['word-problems'] = function() {
 };
 
 
+function showDeepLearning() {
+  document.getElementById('chooser').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('results-dashboard').className = 'results-dashboard';
+  document.getElementById('dice-game').className = 'dice-game';
+  document.getElementById('lesson-viewer').className = 'lesson-viewer';
+  document.getElementById('lessons-library').className = 'lessons-library';
+  document.getElementById('deep-library').className = 'deep-library active';
+  renderDeepCards();
+}
+
+function hideDeepLearning() {
+  document.getElementById('deep-library').className = 'deep-library';
+  showChooser();
+}
+
+function renderDeepCards() {
+  var grid = document.getElementById('deep-grid');
+  grid.innerHTML = '';
+  DEEP_LESSONS.forEach(function(lesson) {
+    var card = document.createElement('button');
+    card.className = 'deep-card';
+    card.onclick = function() { openDeepLesson(lesson.id); };
+    card.innerHTML = '<span class="deep-card-icon">' + lesson.icon + '</span>' +
+      '<div class="deep-card-info">' +
+        '<div class="deep-card-title">' + lesson.title + '</div>' +
+        '<div class="deep-card-subject">' + lesson.subject + '</div>' +
+        '<div class="deep-card-desc">' + lesson.desc + '</div>' +
+      '</div>' +
+      '<span class="deep-card-arrow">›</span>';
+    grid.appendChild(card);
+  });
+}
+
+function openDeepLesson(id) {
+  document.getElementById('deep-library').className = 'deep-library';
+  var viewer = document.getElementById('lesson-viewer');
+  var content = document.getElementById('lesson-viewer-content');
+  var backBtn = viewer.querySelector('.btn-back');
+  backBtn.setAttribute('onclick', 'closeDeepLessonViewer()');
+  if (LESSON_STYLE[id]) {
+    var style = document.createElement('style');
+    style.id = 'lesson-style-' + id;
+    style.textContent = LESSON_STYLE[id];
+    content.innerHTML = '';
+    content.appendChild(style);
+    var div = document.createElement('div');
+    div.innerHTML = LESSON_CONTENT[id];
+    content.appendChild(div);
+  } else {
+    content.innerHTML = LESSON_CONTENT[id] || '<p>Lesson not found.</p>';
+  }
+  viewer.className = 'lesson-viewer active';
+  window.scrollTo(0, 0);
+  if (LESSON_SCRIPT[id]) {
+    setTimeout(function() { LESSON_SCRIPT[id](); }, 50);
+  }
+}
+
+function closeDeepLessonViewer() {
+  var viewer = document.getElementById('lesson-viewer');
+  viewer.className = 'lesson-viewer';
+  document.getElementById('lesson-viewer-content').innerHTML = '';
+  var backBtn = viewer.querySelector('.btn-back');
+  backBtn.setAttribute('onclick', 'closeLessonViewer()');
+  showDeepLearning();
+}
+
 function showLessons() {
   document.getElementById('chooser').style.display = 'none';
   document.getElementById('main').style.display = 'none';
   document.getElementById('results-dashboard').className = 'results-dashboard';
   document.getElementById('dice-game').className = 'dice-game';
   document.getElementById('lesson-viewer').className = 'lesson-viewer';
+  document.getElementById('deep-library').className = 'deep-library';
   document.getElementById('lessons-library').className = 'lessons-library active';
   document.getElementById('lessons-search').value = '';
   renderLessonCards(LESSONS);

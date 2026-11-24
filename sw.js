@@ -1,4 +1,4 @@
-var CACHE_NAME = 'aalm-v4';
+var CACHE_NAME = 'aalm-v5';
 var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_O1iVCN-GtZ1KHCPQSOlTLztUXeOFDddV2qq-R_veuosy4nUuDG1u_MnoDONRFCypCZa2Wj8q3UZ3/pub?output=csv';
 var RESULTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQbsDqmsPfz5xKu40gAkCDp5_IpM8QzKE-2vqLUnvm62KHEGoy0LXd8NmprJlsFgH-kib2y7ZBq0tRf/pub?output=csv';
 

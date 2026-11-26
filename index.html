@@ -1006,6 +1006,18 @@
   }
   .lessons-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
   .lessons-search::placeholder { color: var(--muted); }
+  .lessons-subjects { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .lessons-subj-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 10px 6px; border: 2px solid var(--border); border-radius: var(--radius);
+    background: var(--card); cursor: pointer; font-family: inherit; color: var(--text);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .lessons-subj-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+  .lessons-subj-btn.active { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .lessons-subj-icon { font-size: 1.5rem; line-height: 1; }
+  .lessons-subj-name { font-size: 0.75rem; font-weight: 800; text-align: center; line-height: 1.2; }
+  .lessons-subj-count { font-size: 0.7rem; font-weight: 600; color: var(--muted); }
   .lessons-count { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 14px; }
   .lessons-grid { display: flex; flex-direction: column; gap: 12px; }
   .lesson-card {
@@ -1424,6 +1436,7 @@
       <div class="lessons-search-box">
         <input type="text" class="lessons-search" id="lessons-search" placeholder="Search lessons..." oninput="filterLessons()">
       </div>
+      <div class="lessons-subjects" id="lessons-subjects"></div>
       <div class="lessons-count" id="lessons-count"></div>
       <div class="lessons-grid" id="lessons-grid"></div>
     </div>
@@ -10570,6 +10583,56 @@ function closeDeepLessonViewer() {
   showDeepLearning();
 }
 
+var lessonSubjectFilter = null;
+var LESSON_SUBJECT_META = {
+  'Science':    { icon: '🔬', order: 1 },
+  'Maths':      { icon: '🔢', order: 2 },
+  'English':    { icon: '📖', order: 3 },
+  'Humanities': { icon: '🌍', order: 4 },
+  'Computing':  { icon: '💻', order: 5 },
+  'French':     { icon: '🇫🇷', order: 6 },
+  'Music':      { icon: '🎵', order: 7 },
+  '11+':        { icon: '🎓', order: 8 },
+  'Decisions':  { icon: '⚖️', order: 9 },
+  'PE':         { icon: '⚽', order: 10 },
+  'Geography':  { icon: '🗺️', order: 11 }
+};
+
+function buildSubjectButtons() {
+  var counts = {};
+  LESSONS.forEach(function(l) { counts[l.subject] = (counts[l.subject] || 0) + 1; });
+  var subjects = Object.keys(counts).sort(function(a, b) {
+    return ((LESSON_SUBJECT_META[a] || {}).order || 99) - ((LESSON_SUBJECT_META[b] || {}).order || 99);
+  });
+  var box = document.getElementById('lessons-subjects');
+  box.innerHTML = '';
+  var allBtn = document.createElement('button');
+  allBtn.className = 'lessons-subj-btn active';
+  allBtn.setAttribute('data-subj', '');
+  allBtn.innerHTML = '<span class="lessons-subj-icon">📚</span><span class="lessons-subj-name">All</span><span class="lessons-subj-count">' + LESSONS.length + '</span>';
+  allBtn.onclick = function() { pickSubject(null); };
+  box.appendChild(allBtn);
+  subjects.forEach(function(s) {
+    var meta = LESSON_SUBJECT_META[s] || { icon: '📋' };
+    var btn = document.createElement('button');
+    btn.className = 'lessons-subj-btn';
+    btn.setAttribute('data-subj', s);
+    btn.innerHTML = '<span class="lessons-subj-icon">' + meta.icon + '</span><span class="lessons-subj-name">' + s + '</span><span class="lessons-subj-count">' + counts[s] + '</span>';
+    btn.onclick = function() { pickSubject(s); };
+    box.appendChild(btn);
+  });
+}
+
+function pickSubject(subj) {
+  lessonSubjectFilter = subj;
+  var btns = document.querySelectorAll('#lessons-subjects .lessons-subj-btn');
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    b.className = 'lessons-subj-btn' + ((b.getAttribute('data-subj') === (subj || '')) ? ' active' : '');
+  }
+  filterLessons();
+}
+
 function showLessons() {
   document.getElementById('chooser').style.display = 'none';
   document.getElementById('main').style.display = 'none';
@@ -10579,6 +10642,8 @@ function showLessons() {
   document.getElementById('deep-library').className = 'deep-library';
   document.getElementById('lessons-library').className = 'lessons-library active';
   document.getElementById('lessons-search').value = '';
+  lessonSubjectFilter = null;
+  buildSubjectButtons();
   renderLessonCards(LESSONS);
 }
 
@@ -10614,8 +10679,9 @@ function renderLessonCards(list) {
 
 function filterLessons() {
   var q = document.getElementById('lessons-search').value.toLowerCase().trim();
-  if (!q) { renderLessonCards(LESSONS); return; }
-  var filtered = LESSONS.filter(function(l) {
+  var base = lessonSubjectFilter ? LESSONS.filter(function(l) { return l.subject === lessonSubjectFilter; }) : LESSONS;
+  if (!q) { renderLessonCards(base); return; }
+  var filtered = base.filter(function(l) {
     return l.title.toLowerCase().indexOf(q) !== -1 ||
            l.subject.toLowerCase().indexOf(q) !== -1 ||
            l.desc.toLowerCase().indexOf(q) !== -1 ||

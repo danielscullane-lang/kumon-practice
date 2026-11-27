@@ -333,6 +333,34 @@
   .answer-input.correct { border-color: var(--success); background: var(--success-bg); }
   .answer-input.incorrect { border-color: var(--danger); background: var(--danger-bg); }
 
+  .num-pad { display: none; max-width: 280px; margin: 0 auto 14px; }
+  .num-pad.active { display: block; }
+  .num-pad-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .num-pad-btn {
+    height: 56px; border-radius: 50%; border: 2px solid var(--primary);
+    background: var(--card); color: var(--primary-dark);
+    font-size: 1.4rem; font-weight: 800; font-family: inherit;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .num-pad-btn:hover { background: var(--primary-light); }
+  .num-pad-btn:active { transform: scale(0.9); }
+  .num-pad-btn.wide { grid-column: span 2; border-radius: 28px; font-size: 1rem; }
+  .num-pad-btn.action { background: var(--primary-light); }
+  .num-pad-units {
+    display: none; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px;
+  }
+  .num-pad-units.active { display: flex; }
+  .num-pad-unit {
+    padding: 6px 12px; border-radius: 999px; border: 2px solid var(--primary);
+    background: var(--card); color: var(--primary-dark);
+    font-size: 0.85rem; font-weight: 800; font-family: inherit;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .num-pad-unit:hover { background: var(--primary-light); }
+  .num-pad-unit:active { transform: scale(0.9); }
+
   .mcq-options {
     display: none;
     flex-direction: column;
@@ -1530,6 +1558,36 @@
           <div class="mcq-options" id="mcq-options"></div>
           <input class="answer-input" id="answer-input" type="text" placeholder="Type your answer here..."
                  onkeydown="if(event.key==='Enter') checkAnswer()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="num-pad" id="num-pad">
+            <div class="num-pad-units" id="num-pad-units">
+              <button class="num-pad-unit" type="button" onclick="numType('cm')">cm</button>
+              <button class="num-pad-unit" type="button" onclick="numType('mm')">mm</button>
+              <button class="num-pad-unit" type="button" onclick="numType('m')">m</button>
+              <button class="num-pad-unit" type="button" onclick="numType('km')">km</button>
+              <button class="num-pad-unit" type="button" onclick="numType('kg')">kg</button>
+              <button class="num-pad-unit" type="button" onclick="numType('g')">g</button>
+              <button class="num-pad-unit" type="button" onclick="numType('ml')">ml</button>
+              <button class="num-pad-unit" type="button" onclick="numType('£')">£</button>
+              <button class="num-pad-unit" type="button" onclick="numType('%')">%</button>
+              <button class="num-pad-unit" type="button" onclick="numType('°C')">°C</button>
+            </div>
+            <div class="num-pad-grid">
+              <button class="num-pad-btn" type="button" onclick="numType('7')">7</button>
+              <button class="num-pad-btn" type="button" onclick="numType('8')">8</button>
+              <button class="num-pad-btn" type="button" onclick="numType('9')">9</button>
+              <button class="num-pad-btn" type="button" onclick="numType('4')">4</button>
+              <button class="num-pad-btn" type="button" onclick="numType('5')">5</button>
+              <button class="num-pad-btn" type="button" onclick="numType('6')">6</button>
+              <button class="num-pad-btn" type="button" onclick="numType('1')">1</button>
+              <button class="num-pad-btn" type="button" onclick="numType('2')">2</button>
+              <button class="num-pad-btn" type="button" onclick="numType('3')">3</button>
+              <button class="num-pad-btn" type="button" onclick="numType('.')">.</button>
+              <button class="num-pad-btn" type="button" onclick="numType('0')">0</button>
+              <button class="num-pad-btn action" type="button" onclick="numBack()">&#9003;</button>
+              <button class="num-pad-btn action" type="button" onclick="numType('-')">&#8722;</button>
+              <button class="num-pad-btn wide action" type="button" onclick="numClear()">Clear</button>
+            </div>
+          </div>
           <div class="btn-row">
             <button class="btn btn-check" onclick="checkAnswer()">Check</button>
             <button class="btn btn-skip" onclick="skipQuestion()">Skip</button>
@@ -2584,10 +2642,23 @@ function showQuestion() {
   inp.value = '';
   inp.className = 'answer-input';
   inp.disabled = false;
+  var numPad = document.getElementById('num-pad');
+  var numUnits = document.getElementById('num-pad-units');
+  var useNumPad = !mcqParsed && isNumPadQuestion(q);
   if (mcqParsed) {
     inp.style.display = 'none';
+    numPad.className = 'num-pad';
+  } else if (useNumPad) {
+    inp.style.display = '';
+    inp.readOnly = true;
+    inp.placeholder = 'Use the number pad below';
+    numPad.className = 'num-pad active';
+    numUnits.className = 'num-pad-units' + (needsUnits(q.answer) ? ' active' : '');
   } else {
     inp.style.display = '';
+    inp.readOnly = false;
+    inp.placeholder = 'Type your answer here...';
+    numPad.className = 'num-pad';
     inp.focus();
   }
 
@@ -2645,6 +2716,26 @@ function normaliseAnswer(userAns, correctAns) {
 function needsUnits(answer) {
   var a = answer.toLowerCase();
   return /°|degrees|cm|mm|m\b|km|kg|g\b|ml|litres|liters|£|%|percent|mph|hours|minutes|seconds/.test(a);
+}
+
+function numType(val) {
+  var inp = document.getElementById('answer-input');
+  if (inp.disabled) return;
+  inp.value += val;
+}
+function numBack() {
+  var inp = document.getElementById('answer-input');
+  if (inp.disabled) return;
+  inp.value = inp.value.slice(0, -1);
+}
+function numClear() {
+  var inp = document.getElementById('answer-input');
+  if (inp.disabled) return;
+  inp.value = '';
+}
+
+function isNumPadQuestion(q) {
+  return q.subject === 'Maths' || q.subject === '11+';
 }
 
 function checkAnswer() {
